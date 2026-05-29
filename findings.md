@@ -48,3 +48,13 @@
   - Return explicit exit codes and write state atomically.
   - Support `CODEX_HOOK_OUTPUT=full` and `CODEX_HOOK_MAX_CHARS`.
 - Added `tests/test_base_hook.py` for hook cycle state and summary freshness behavior.
+
+## Agent.md Navigation Applied
+
+- Added root `agent.md` with project description, module navigation, ignored files, overview-agent injection responsibility, global conventions, and 3-cycle update rule.
+- Added module `agent.md` files for Overview, Task, Media, Config, Adapt, Publish, and Plugin agents.
+- Updated `hooks/base_hook.py` to load only:
+  - root `agent.md`
+  - current module `agentsPrompt/<ModuleAgent>/agent.md`
+- Updated hook cycle rule from 5-cycle `summary.md` freshness to 3-cycle root/module `agent.md` freshness.
+- Ordinary module agents no longer need to read requirement docs, API docs, prompt files, hook files, or planning logs by default.

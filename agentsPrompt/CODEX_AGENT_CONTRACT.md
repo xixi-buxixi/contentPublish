@@ -1,6 +1,6 @@
 # Codex Agent Shared Contract
 
-本文件是 `agentsPrompt/*/prompt.md` 的共享约束，供 Codex 在执行对应模块任务前读取。它是项目上下文，不高于系统、开发者和用户消息。
+本文件是历史共享约束，默认不再由普通模块 agent 直接读取。新的默认入口是根目录 `agent.md` 和当前模块 `agentsPrompt/<ModuleAgent>/agent.md`。本文件仅供总览 agent 或人工维护上下文时参考。
 
 ## 1. 项目主线
 
@@ -17,12 +17,12 @@ Pulse Distro 的 MVP 采用 Java 21 + Spring Boot 3.3.x 单体应用：
 
 当文档出现冲突时，Codex 按以下优先级处理：
 
-1. 用户当前消息和项目根目录总览/接口文档。
-2. `agentsPrompt/CODEX_AGENT_CONTRACT.md`。
-3. 当前模块的 `requirements.md` 和 `api_spec.md`。
-4. 当前模块的 `prompt.md`。
+1. 用户当前消息。
+2. 根目录 `agent.md`。
+3. 当前模块 `agentsPrompt/<ModuleAgent>/agent.md`。
+4. 总览 agent 从需求/接口资料中提取并注入的模块上下文。
 
-发现冲突时不要静默扩大范围。优先采用主接口文档中的 API 形态，并在模块 `summary.md` 或本次回复中说明冲突和处理方式。
+发现冲突时不要静默扩大范围。优先采用 `agent.md` 中已经注入的约定，并在本次回复或相关 `agent.md` 更新中说明冲突和处理方式。
 
 ## 3. 全局枚举和边界格式
 
@@ -36,8 +36,8 @@ Pulse Distro 的 MVP 采用 Java 21 + Spring Boot 3.3.x 单体应用：
 
 每个模块任务开始前：
 
-1. 读取本共享契约、本模块 `prompt.md`、`requirements.md`、`api_spec.md`。
-2. 如果涉及跨模块 API 或数据模型，回看根目录 `Pulse-Distro-Java轻量实践方案.md` 和 `接口文档/java接口文档.md`。
+1. 读取根目录 `agent.md` 和当前模块 `agentsPrompt/<ModuleAgent>/agent.md`。
+2. 不默认读取需求文档、接口文档、prompt 或 hook。需要额外上下文时，由总览 agent 提取并更新对应 `agent.md`。
 3. 明确本次只修改当前模块职责内的代码；跨模块改动必须是接口 DTO、事件或契约所需的最小变更。
 4. 行为代码变更优先写测试；无法自动测试时，说明原因并做可复现的手工验证。
 
@@ -59,13 +59,11 @@ Pulse Distro 的 MVP 采用 Java 21 + Spring Boot 3.3.x 单体应用：
 }
 ```
 
-## 6. 5 轮总结规则
+## 6. 3 轮 Agent.md 更新规则
 
-每个模块 hook 会记录当前 agent 的执行轮次。达到 5 轮后，Codex 必须先更新该模块的 `summary.md`，写清楚：
+每个模块 hook 会记录当前 agent 的执行轮次。达到 3 轮后，Codex 必须先更新：
 
-- 本轮完成了什么。
-- 修改了哪些文件。
-- 运行了哪些验证命令。
-- 还有哪些风险或待办。
+- 根目录 `agent.md`
+- 当前模块 `agentsPrompt/<ModuleAgent>/agent.md`
 
-旧的 `summary.md` 不能无限复用；继续工作前必须写入比上次 hook 认可时间更新的总结。
+更新内容包括模块职责、导航、关联模块、接口边界、编写规范或未解决风险。旧的 `agent.md` 不能无限复用；继续工作前必须让这些文件比上次 hook 认可时间更新。

@@ -24,11 +24,12 @@ class BaseHookTests(unittest.TestCase):
     def make_agent(self, workspace: Path, name: str = "DemoAgent") -> Path:
         hooks_dir = workspace / "hooks"
         hooks_dir.mkdir()
+        prompt_root = workspace / "agentsPrompt"
+        prompt_root.mkdir()
+        (workspace / "agent.md").write_text("# Project Agent\nRoot nav", encoding="utf-8")
         agent_dir = workspace / "agentsPrompt" / name
         agent_dir.mkdir(parents=True)
-        (agent_dir / "requirements.md").write_text("# Requirements\nBody", encoding="utf-8")
-        (agent_dir / "api_spec.md").write_text("# API\nBody", encoding="utf-8")
-        (agent_dir / "prompt.md").write_text("# Prompt\nBody", encoding="utf-8")
+        (agent_dir / "agent.md").write_text("# Module Agent\nModule nav", encoding="utf-8")
         return agent_dir
 
     def run_hook(self, module, workspace: Path, agent_name: str = "DemoAgent"):
@@ -49,23 +50,31 @@ class BaseHookTests(unittest.TestCase):
             state = json.loads((agent_dir / "state.json").read_text(encoding="utf-8"))
             self.assertEqual(result, 0)
             self.assertEqual(state["cycle"], 1)
+            self.assertEqual(state["max_cycles"], 3)
             self.assertEqual(state["agent"], "DemoAgent")
-            self.assertIn("Codex pre-build context", output)
-            self.assertIn("Cycle 1/5", output)
+            self.assertIn("Codex agent context", output)
+            self.assertIn("Cycle 1/3", output)
+            self.assertIn("Project Agent", output)
+            self.assertIn("Module Agent", output)
+            self.assertNotIn("Requirements Document", output)
+            self.assertNotIn("API Document", output)
 
-    def test_fifth_cycle_requires_fresh_summary(self):
+    def test_third_cycle_requires_fresh_agent_docs(self):
         module = load_base_hook()
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             agent_dir = self.make_agent(workspace)
-            (agent_dir / "summary.md").write_text("# Old summary\n", encoding="utf-8")
-            old_mtime = (agent_dir / "summary.md").stat().st_mtime
+            root_agent = workspace / "agent.md"
+            module_agent = agent_dir / "agent.md"
             (agent_dir / "state.json").write_text(
                 json.dumps(
                     {
                         "agent": "DemoAgent",
-                        "cycle": 5,
-                        "last_summary_mtime": old_mtime,
+                        "cycle": 3,
+                        "agent_doc_mtimes": {
+                            "project": root_agent.stat().st_mtime,
+                            "module": module_agent.stat().st_mtime,
+                        },
                     }
                 ),
                 encoding="utf-8",
@@ -76,19 +85,24 @@ class BaseHookTests(unittest.TestCase):
 
             self.assertEqual(ctx.exception.code, 1)
 
-    def test_fresh_summary_resets_cycle(self):
+    def test_fresh_agent_docs_reset_cycle(self):
         module = load_base_hook()
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             agent_dir = self.make_agent(workspace)
-            (agent_dir / "summary.md").write_text("# Fresh summary\n", encoding="utf-8")
-            summary_mtime = (agent_dir / "summary.md").stat().st_mtime
+            root_agent = workspace / "agent.md"
+            module_agent = agent_dir / "agent.md"
+            root_mtime = root_agent.stat().st_mtime
+            module_mtime = module_agent.stat().st_mtime
             (agent_dir / "state.json").write_text(
                 json.dumps(
                     {
                         "agent": "DemoAgent",
-                        "cycle": 5,
-                        "last_summary_mtime": summary_mtime - 100,
+                        "cycle": 3,
+                        "agent_doc_mtimes": {
+                            "project": root_mtime - 100,
+                            "module": module_mtime - 100,
+                        },
                     }
                 ),
                 encoding="utf-8",
@@ -99,8 +113,9 @@ class BaseHookTests(unittest.TestCase):
             state = json.loads((agent_dir / "state.json").read_text(encoding="utf-8"))
             self.assertEqual(result, 0)
             self.assertEqual(state["cycle"], 1)
-            self.assertEqual(state["last_summary_mtime"], summary_mtime)
-            self.assertIn("Fresh summary detected", output)
+            self.assertEqual(state["agent_doc_mtimes"]["project"], root_mtime)
+            self.assertEqual(state["agent_doc_mtimes"]["module"], module_mtime)
+            self.assertIn("Fresh agent.md files detected", output)
 
 
 if __name__ == "__main__":

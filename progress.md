@@ -17,3 +17,5 @@
   - `python -B tests\test_base_hook.py -v`
   - `python -m py_compile hooks\base_hook.py hooks\adapt_hook.py hooks\config_hook.py hooks\media_hook.py hooks\overview_hook.py hooks\plugin_hook.py hooks\publish_hook.py hooks\task_hook.py tests\test_base_hook.py`
   - `CODEX_HOOK_MAX_CHARS=900 python -B hooks\overview_hook.py`
+- Added root and module `agent.md` files for Codex navigation.
+- Updated hook behavior to inject only root/module `agent.md` and require both to be refreshed every 3 cycles.

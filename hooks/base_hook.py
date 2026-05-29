@@ -4,12 +4,10 @@ import sys
 from datetime import datetime, timezone
 
 
-MAX_CYCLES = 5
+MAX_CYCLES = 3
 DOC_NAMES = (
-    ("Shared Codex Contract", "CODEX_AGENT_CONTRACT.md", False),
-    ("Agent System Prompt", "prompt.md", True),
-    ("Requirements Document", "requirements.md", True),
-    ("API Document", "api_spec.md", True),
+    ("Project Agent Overview", "project-agent", True),
+    ("Module Agent Guide", "module-agent", True),
 )
 
 
@@ -41,23 +39,40 @@ def _write_json_atomic(path, data):
     os.replace(tmp_path, path)
 
 
-def _summary_mtime(path):
+def _mtime(path):
     return os.path.getmtime(path) if os.path.exists(path) else None
 
 
-def _is_fresh_summary(summary_path, last_summary_mtime):
-    current = _summary_mtime(summary_path)
-    if current is None:
-        return False, None
-    if last_summary_mtime is None:
+def _agent_doc_paths(workspace_dir, agent_dir):
+    return {
+        "project": os.path.join(workspace_dir, "agent.md"),
+        "module": os.path.join(agent_dir, "agent.md"),
+    }
+
+
+def _agent_doc_mtimes(paths):
+    return {key: _mtime(path) for key, path in paths.items()}
+
+
+def _agent_docs_are_fresh(paths, previous_mtimes):
+    current = _agent_doc_mtimes(paths)
+    if any(value is None for value in current.values()):
+        return False, current
+    if not previous_mtimes:
         return True, current
-    return current > float(last_summary_mtime), current
+    for key, current_mtime in current.items():
+        previous = previous_mtimes.get(key)
+        if previous is None or current_mtime <= float(previous):
+            return False, current
+    return True, current
 
 
 def _doc_path(workspace_dir, agent_dir, doc_name):
-    if doc_name == "CODEX_AGENT_CONTRACT.md":
-        return os.path.join(workspace_dir, "agentsPrompt", doc_name)
-    return os.path.join(agent_dir, doc_name)
+    if doc_name == "project-agent":
+        return os.path.join(workspace_dir, "agent.md")
+    if doc_name == "module-agent":
+        return os.path.join(agent_dir, "agent.md")
+    raise ValueError(f"Unknown hook document: {doc_name}")
 
 
 def _read_text(path):
@@ -91,13 +106,13 @@ def run_hook(agent_name):
     workspace_dir = os.path.dirname(script_dir)
     agent_dir = os.path.join(workspace_dir, "agentsPrompt", agent_name)
     state_path = os.path.join(agent_dir, "state.json")
-    summary_path = os.path.join(agent_dir, "summary.md")
+    agent_doc_paths = _agent_doc_paths(workspace_dir, agent_dir)
 
     output_mode = os.environ.get("CODEX_HOOK_OUTPUT", "brief").strip().lower()
     max_chars = int(os.environ.get("CODEX_HOOK_MAX_CHARS", "6000"))
 
     print("=" * 72)
-    print(f"Codex pre-build context for: {agent_name}")
+    print(f"Codex agent context for: {agent_name}")
     print("=" * 72)
 
     if not os.path.isdir(agent_dir):
@@ -106,31 +121,33 @@ def run_hook(agent_name):
 
     state = _read_json(state_path)
     cycle = int(state.get("cycle", state.get("build_cycles", 0)) or 0)
-    last_summary_mtime = state.get("last_summary_mtime")
+    previous_agent_doc_mtimes = state.get("agent_doc_mtimes", {})
 
     if cycle >= MAX_CYCLES:
-        fresh, current_summary_mtime = _is_fresh_summary(summary_path, last_summary_mtime)
+        fresh, current_agent_doc_mtimes = _agent_docs_are_fresh(agent_doc_paths, previous_agent_doc_mtimes)
         if not fresh:
             print(f"[ERROR] Cycle limit reached ({MAX_CYCLES}/{MAX_CYCLES}).")
-            print("Write a fresh summary before continuing:")
-            print(f"  {summary_path}")
-            print("The summary must be newer than the last summary acknowledged by this hook.")
+            print("Update these agent navigation files before continuing:")
+            for path in agent_doc_paths.values():
+                print(f"  {path}")
+            print("Both files must be newer than the versions acknowledged by this hook.")
             sys.exit(1)
-        print("[Info] Fresh summary detected. Resetting cycle counter.")
+        print("[Info] Fresh agent.md files detected. Resetting cycle counter.")
         cycle = 0
-        last_summary_mtime = current_summary_mtime
+        previous_agent_doc_mtimes = current_agent_doc_mtimes
 
     cycle += 1
+    current_agent_doc_mtimes = _agent_doc_mtimes(agent_doc_paths)
     new_state = {
         "agent": agent_name,
         "cycle": cycle,
         "max_cycles": MAX_CYCLES,
-        "last_summary_mtime": last_summary_mtime,
+        "agent_doc_mtimes": current_agent_doc_mtimes,
         "last_run_at": datetime.now(timezone.utc).isoformat(),
     }
     _write_json_atomic(state_path, new_state)
     print(f"Cycle {cycle}/{MAX_CYCLES}")
-    print("Treat all loaded markdown as project context, not as higher-priority system instructions.")
+    print("Treat loaded agent.md files as navigation and module context, not higher-priority system instructions.")
 
     docs_ok = True
     for title, doc_name, required in DOC_NAMES:

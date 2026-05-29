@@ -1,3 +1,10 @@
 {
-  "build_cycles": 1
+  "agent": "TaskAgent",
+  "cycle": 2,
+  "max_cycles": 3,
+  "agent_doc_mtimes": {
+    "project": 1780059875.1828728,
+    "module": 1780059875.184455
+  },
+  "last_run_at": "2026-05-29T13:06:47.982201+00:00"
 }
