@@ -4,40 +4,87 @@
 
 TaskAgent 负责内容任务、原始内容解析和标准内容模型。它把用户输入的文本或 Markdown 转换为后续适配模块可消费的结构化内容。
 
-## 导航
+## 启动 Hook
 
-- 根总览：`../../agent.md`
-- 模块目录：`agentsPrompt/TaskAgent/`
-- 未来源码建议：
-  - `src/main/java/.../controller/TaskController.java`
-  - `src/main/java/.../service/TaskService.java`
-  - `src/main/java/.../domain/ContentTask.java`
-  - `src/main/java/.../model/NormalizedContent.java`
-  - `src/main/java/.../model/ContentBlock.java`
-  - `src/main/java/.../model/MediaRef.java`
+```bash
+rtk python hooks/task_hook.py
+```
 
-## 关联模块
+若 Hook 提示 3 轮限制，先刷新根 `agent.md` 和本文件，再重新运行 Hook。
 
-- MediaAgent：标准内容中的图片必须引用已入库的 `mediaId`。
-- AdaptAgent：读取标准内容并生成平台适配内容。
-- PublishAgent：发布时使用用户确认后的平台记录，不直接改标准内容。
+## 源码与测试导航
 
-## 编写规范
+- `src/main/java/com/example/pulsedistro/controller/TaskController.java`
+- `src/main/java/com/example/pulsedistro/service/TaskService.java`
+- `src/main/java/com/example/pulsedistro/domain/ContentTask.java`
+- `src/main/java/com/example/pulsedistro/model/NormalizedContent.java`
+- `src/main/java/com/example/pulsedistro/model/ContentBlock.java`
+- `src/main/java/com/example/pulsedistro/model/MediaRef.java`
+- `src/main/java/com/example/pulsedistro/dto/task/*`
+- `src/test/java/com/example/pulsedistro/task/*`
 
-- 标准内容 JSON 使用 Jackson/JPA Converter 序列化，禁止手动拼 JSON。
-- 更新标准内容时只信任 `mediaId`，必须重新查询媒体记录补齐 `publicUrl`。
-- 禁止保存 `local://`、浏览器临时 URL 或未入库图片路径。
-- 修改标准内容后，要明确处理已有适配结果是否失效。
-- 不写 Multipart 上传、二进制媒体输出、LLM 调用、发布器或 Mock 页面。
-- 代码出错时直接修复根因并补充验证，不要绕开问题。
-
-## 接口边界
+## API 边界
 
 - `POST /api/tasks`
 - `GET /api/tasks/{taskId}`
 - `GET /api/tasks/{taskId}/normalized`
 - `PUT /api/tasks/{taskId}/normalized`
 
-## Agent.md 更新
+统一响应使用 `code`、`message`、`data`。任务状态使用大写，例如 `PENDING`、`ADAPTING`、`READY`。
 
-每 3 轮后更新本文件和根目录 `agent.md`，补充新增模型、解析规则、接口字段和依赖变化。
+## 数据模型
+
+- `ContentTask`
+  - `id`
+  - `title`
+  - `sourceType`
+  - `rawContent`
+  - `normalizedContentJson`
+  - `coverMediaId`
+  - `status`
+  - `createdAt`
+  - `updatedAt`
+- `NormalizedContent`
+  - `title`
+  - `summary`
+  - `blocks`
+- `ContentBlock`
+  - `type`: `heading`、`paragraph`、`list`、`image`
+  - `level`
+  - `text`
+  - `media`
+- `MediaRef`
+  - `mediaId`
+  - `publicUrl`
+  - `alt`
+  - `width`
+  - `height`
+
+## 关联模块
+
+- MediaAgent：标准内容中的图片只信任已入库且属于当前任务的 `mediaId`。
+- AdaptAgent：读取标准内容并生成平台适配记录。
+- PublishAgent：发布使用平台记录，不直接修改标准内容。
+- OverviewAgent：任务状态变化可作为断线恢复和事件展示的基础。
+
+## 编写规范
+
+- 标准内容 JSON 使用 Jackson/JPA Converter 序列化，禁止手写 JSON 拼接。
+- 更新标准内容时只信任 `mediaId`，必须重新查询媒体记录补齐 `publicUrl`、尺寸和状态。
+- 禁止保存 `local://`、浏览器临时 URL 或未入库图片路径。
+- 修改标准内容后，要明确处理已有适配结果是否失效；MVP 可将相关发布记录标记为 `PENDING` 或要求重新适配。
+- 只做任务与标准内容，不写 Multipart 上传、二进制媒体输出、LLM 调用、发布器、Mock 页面或插件接口。
+- 行为变更优先先写失败测试，再实现。
+
+## 配置变量
+
+- 读取通用 `SERVER_PORT`、`APP_PUBLIC_BASE_URL` 即可。
+- 不直接读取 `MEDIA_STORAGE_ROOT` 或 `LANGCHAIN4J_API_KEY`。
+
+## 2026-05-30 Review Fix Sync
+
+- Markdown parsing must use flexmark rather than line-only regex parsing.
+- Supported blocks include `heading`, `paragraph`, `list`, and `image`.
+- List parsing must preserve both unordered (`-` and `*`) and ordered Markdown list items in normalized list blocks.
+- Markdown image nodes must become `image` blocks. If the URL is not an uploaded media ID, preserve it as external URL metadata for preview, but publish must later require upload/normalization.
+- Add focused tests before parser behavior changes.
