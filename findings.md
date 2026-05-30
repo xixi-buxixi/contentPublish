@@ -3,58 +3,57 @@
 ## Project Context
 
 - Workspace: `D:\My\Java\project\contentPublish`
-- Initial git status shows untracked directories: `agentsPrompt/`, `hooks/`, and `接口文档/`.
-- Local shell rule: use `rtk` as a prefix for shell commands.
+- Shell rule: every command must be prefixed with `rtk`.
+- Current git status includes a pre-existing modification to `index.html`; treat it as user work unless explicitly editing frontend.
+- Existing project now includes a Java 21 + Spring Boot 3.3.13 MVP under `src/`, plus documentation, prompts, hooks, tests, and one pre-existing modified prototype `index.html`.
 
-## Documents
+## Orchestrator vs OverviewAgent
 
-- Root documents:
-  - `Pulse-Distro-完整架构方案.md`: full architecture accepts Java core plus optional Python/FastAPI/Chrome extension direction, but still positions Mock publishing as stable MVP and real publishing as advanced extension.
-  - `Pulse-Distro-Java轻量实践方案.md`: Java 21 + Spring Boot 3.3 single-Jar MVP, H2 file DB, local media storage, Vue 3 static frontend, async adaptation, WebSocket status pipeline, Mock publishing as the main path, Chrome extension as optional real-publish extension.
-  - `接口文档/java接口文档.md`: API base `/api`, media and mock routes outside `/api`, unified JSON envelope, session init, userToken/traceId isolation, async adapt flow, media lifecycle, publish flow, plugin register/heartbeat/status, WebSocket event formats.
-- Encoding note: files are UTF-8; PowerShell output needs explicit UTF-8 console encoding to avoid mojibake.
+- Orchestrator is the coordination role in this session. It reads broad docs, extracts minimal context, updates module `agent.md` files, runs Hooks, and sequences module work.
+- `OverviewAgent` is a Java business module. It owns `/api/session/init`, WebSocket connection handling, event wrapping, and user-token-targeted incremental pushes.
+- The Orchestrator may update `agentsPrompt/OverviewAgent/agent.md`; Java `OverviewAgent` must not absorb Task/Media/Adapt/Publish business logic.
 
-## Agents
+## Source Documents Read
 
-- `OverviewAgent` prompt aligns with session initialization, WebSocket routing, event-driven boundaries, and avoiding business logic in global controllers.
-- `AdaptAgent`: aligns with async `/api/tasks/{taskId}/adapt`, placeholder `platform_publish_record`, LangChain4j plus template fallback, and WebSocket completion/degraded events.
-- `ConfigAgent`: aligns with platform config JSON loading, H2 persistence, and `/api/configs/platforms`.
-- `TaskAgent`: aligns with content task CRUD and normalized content JSON model.
-- `MediaAgent`: aligns with local media storage, `/media/{mediaId}`, metadata, SHA-256, and reference-safe deletion.
-- `PublishAgent`: aligns with `Publisher`, MockPublisher, status transitions, `/mock/{platform}/{recordId}`, and `/api/mock/...`.
-- `PluginAgent`: aligns with optional real-publish extension support, plugin register/heartbeat/status, and suspended status callback.
+- Root `agent.md`: Java 21 + Spring Boot 3.3, H2, local media, WebSocket, LangChain4j with template fallback, mock publish as MVP main path.
+- `agentsPrompt/CODEX_AGENT_CONTRACT.md`: priority rules, lowercase platform/mode values, uppercase statuses, `publishMode` nullable during adaptation, WebSocket/session shape.
+- `Pulse-Distro-Java轻量实践方案.md`: recommended package layout, data model tables, `NormalizedContent`, `MediaRef`, `AdaptedContent`, async adaptation, MockPublisher, optional plugin extension.
+- `接口文档/java接口文档.md`: concrete HTTP routes, request/response examples, unified envelope, session token headers, WebSocket events, fallback query flow.
+- Existing module `agent.md` files: already contain first-pass module responsibilities and route boundaries; they need richer minimal context for data models, source paths, `.env`, Hook rhythm, and cross-module contracts.
 
-## Hooks
+## API Boundary Summary
 
-- `hooks/base_hook.py` computes workspace from its own path, loads the matching agent `requirements.md` and `api_spec.md`, increments `state.json`, and blocks after 5 cycles if `summary.md` is missing.
-- Thin hook wrappers call `base_hook.run_hook("<AgentName>")`.
+- Session: `POST /api/session/init`; WebSocket `/ws/pipeline?userToken={userToken}&traceId={traceId}`.
+- Task: `POST /api/tasks`, `GET /api/tasks/{taskId}`, `GET/PUT /api/tasks/{taskId}/normalized`.
+- Media: `POST /api/tasks/{taskId}/media`, `GET /api/tasks/{taskId}/media`, `GET /media/{mediaId}`, `DELETE /api/tasks/{taskId}/media/{mediaId}`.
+- Adapt/records: `POST /api/tasks/{taskId}/adapt`, `GET /api/tasks/{taskId}/records`, `GET/PUT /api/records/{recordId}`, `POST /api/records/{recordId}/skip`.
+- Publish/mock: `POST /api/tasks/{taskId}/publish`, `GET /mock/{platform}/{recordId}`, `GET /api/mock/{platform}/{recordId}`.
+- Config: `GET /api/configs/platforms`, `GET /api/configs/platforms/{platform}`.
+- Plugin optional: `POST /api/plugin/register`, `POST /api/plugin/heartbeat`, `GET /api/plugin/status`, `POST /api/plugin/publish-status`.
 
-## Initial Risks
+## Data Model Summary
 
-- Some docs/prompts use lowercase API values (`mode=mock/real`) while SQL comments/interface comments mention uppercase (`MOCK/REAL`). This can confuse agents and generated enums.
-- `platform_publish_record.publish_mode` is declared `NOT NULL`, but adaptation placeholder records are created before publish mode is known and API examples return `publishMode: null`.
-- The 5-cycle hook blocks forever once `summary.md` exists because it resets the counter in memory but does not require a fresh summary for the next 5 cycles. It also treats any stale summary as sufficient.
-- The hook prints full docs every run. This is useful for forcing context, but can be noisy and token-heavy.
-- Hook behavior depends on a Python runtime and mutable `state.json`; syntax is portable Python, but there is no explicit Python version guard or atomic state write.
+- `ContentTask`: task metadata, source type, raw content, normalized JSON, cover media, status, timestamps.
+- `MediaResource`: task-owned media metadata, local storage key, public URL, SHA-256, dimensions, status.
+- `PlatformPublishRecord`: per-platform adapted content, tags/media JSON, nullable publish mode until publishing, status, publish URL, error, timestamps.
+- `PlatformConfig`: platform ID, display name, full JSON config, enabled flag.
+- Plugin online state: optional real-publish extension currently uses an in-memory `PluginManager` keyed by user token/session ID.
+- Standard records: `MediaRef`, `ContentBlock`, `NormalizedContent`, `AdaptedContent`.
 
-## Optimizations Applied
+## Implementation Summary
 
-- Added `agentsPrompt/CODEX_AGENT_CONTRACT.md` as the shared Codex contract for project mainline, enum casing, publish mode nullability, WebSocket/session rules, and summary cadence.
-- Rewrote all module `prompt.md` files into a consistent Codex format: goal, startup context, responsibility boundary, implementation protocol, and acceptance checklist.
-- Updated `hooks/base_hook.py` to:
-  - Load the shared contract before module docs.
-  - Use `cycle`, `max_cycles`, `last_summary_mtime`, and `last_run_at`.
-  - Require a fresh `summary.md` after five cycles instead of accepting stale summaries forever.
-  - Return explicit exit codes and write state atomically.
-  - Support `CODEX_HOOK_OUTPUT=full` and `CODEX_HOOK_MAX_CHARS`.
-- Added `tests/test_base_hook.py` for hook cycle state and summary freshness behavior.
+- Maven project: `pom.xml`, `src/main/resources/application.yml`, and `src/test/resources/application-test.yml`.
+- Stage 1: Task and Media services/controllers, JPA entities/repositories, normalized content models, local image storage, `/media/{mediaId}` binary access.
+- Stage 2: platform config JSON loading/persistence, async adaptation placeholders, template fallback generation, record edit/skip/detail/list.
+- Stage 3: session init, WebSocket registration and userToken-scoped event publishing, mock publishing, mock JSON and responsive mock HTML.
+- Stage 4 optional: plugin register/heartbeat/status/publish callback and `real` publish online-state handoff.
+- Tests: stage integration tests plus API smoke test cover 9 Java scenarios; Hook tests cover `.env` loading and cycle enforcement.
 
-## Agent.md Navigation Applied
+## Frontend Contract Notes
 
-- Added root `agent.md` with project description, module navigation, ignored files, overview-agent injection responsibility, global conventions, and 3-cycle update rule.
-- Added module `agent.md` files for Overview, Task, Media, Config, Adapt, Publish, and Plugin agents.
-- Updated `hooks/base_hook.py` to load only:
-  - root `agent.md`
-  - current module `agentsPrompt/<ModuleAgent>/agent.md`
-- Updated hook cycle rule from 5-cycle `summary.md` freshness to 3-cycle root/module `agent.md` freshness.
-- Ordinary module agents no longer need to read requirement docs, API docs, prompt files, hook files, or planning logs by default.
+- Reference design is `index.html`; do not casually overwrite current user modifications.
+- Use responsive flex/grid layout and avoid fixed widths or hard-coded percentage widths in new frontend work.
+- Preserve Tailwind v4, Outfit headings, Inter body, `.glass-panel`, and `.glass-header` language.
+- WebSocket must auto-reconnect and HTTP-fetch latest task/records on initialization or reconnect.
+- Edited adapted text must be saved through `PUT /api/records/{recordId}` before publish.
+- In `real` mode, publish controls must reflect plugin offline state gracefully.

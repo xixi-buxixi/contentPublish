@@ -10,1229 +10,120 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* Modern CSS Variables & Resets */
-        :root {
-            /* Light Theme Palette (Minimalist Slate & Indigo) */
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f1f5f9;
-            --border-color: #e2e8f0;
-            --border-hover: #cbd5e1;
-            
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            
-            --color-primary: #4f46e5;      /* Indigo-600 */
-            --color-primary-hover: #4338ca;
-            --color-primary-light: #eeebff;
-            --color-success: #10b981;      /* Emerald-500 */
-            --color-success-light: #ecfdf5;
-            --color-warning: #f59e0b;      /* Amber-500 */
-            --color-warning-light: #fffbeb;
-            --color-error: #ef4444;        /* Red-500 */
-            --color-error-light: #fef2f2;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-            
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-            --radius-full: 9999px;
-            
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-title: 'Outfit', 'Inter', system-ui, sans-serif;
-            
-            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    <!-- Tailwind CSS v4 Play CDN (Official Client-side Browser Compiler) -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 
-        /* Dark Mode Override */
-        [data-theme="dark"] {
-            --bg-primary: #0b0f19;
-            --bg-secondary: #131c2e;
-            --bg-tertiary: #1e293b;
-            --border-color: #2e3b52;
-            --border-hover: #3e4e68;
-            
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            
-            --color-primary: #6366f1;      /* Indigo-500 */
-            --color-primary-hover: #4f46e5;
-            --color-primary-light: #1e1b4b;
-            --color-success: #34d399;      /* Emerald-400 */
-            --color-success-light: #064e3b;
-            --color-warning: #fbbf24;      /* Amber-400 */
-            --color-warning-light: #78350f;
-            --color-error: #f87171;        /* Red-400 */
-            --color-error-light: #7f1d1d;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+    <style type="text/css">
+        /* Base typography overrides and custom scrollbars */
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             font-size: 14px;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition-smooth);
-            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
-
-        /* Utility Classes */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
+        .font-title {
+            font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+        }
+        /* Custom thin scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+        
+        /* Glassmorphism styling helper classes */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
         
-        [data-theme="dark"] .glass {
-            background: rgba(19, 28, 46, 0.7);
+        .glass-header {
+            background-color: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
-        /* Header Style */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            border-bottom: 1px font var(--border-color);
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-smooth);
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--color-primary), #a855f7);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
-        }
-
-        .logo-text {
-            font-family: var(--font-title);
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, var(--color-primary), #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sys-status-bar {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: var(--radius-full);
-            font-size: 12px;
-            font-weight: 500;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-        }
-
-        .status-indicator {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-
-        .status-indicator.online { background-color: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
-        .status-indicator.offline { background-color: var(--text-muted); }
-        .status-indicator.processing { background-color: var(--color-warning); animation: pulse 1.5s infinite; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .controls-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
-
-        .icon-btn:hover {
-            border-color: var(--border-hover);
-            color: var(--text-primary);
-            background-color: var(--bg-tertiary);
-        }
-
-        /* Container & Layout */
-        .workspace {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 64px);
-            overflow: hidden;
-        }
-
-        .input-panel {
-            width: 42%;
-            border-right: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            transition: var(--transition-smooth);
-        }
-
-        .output-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--bg-primary);
-        }
-
-        .panel-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-family: var(--font-title);
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .panel-body {
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Forms */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            font-size: 14px;
-            transition: var(--transition-smooth);
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px var(--color-primary-light);
-        }
-
-        .form-textarea {
-            min-height: 250px;
-            resize: vertical;
-        }
-
-        /* Media Upload Zone */
-        .media-uploader {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            background-color: var(--bg-primary);
-        }
-
-        .media-uploader:hover {
-            border-color: var(--color-primary);
-            background-color: var(--color-primary-light);
-        }
-
-        .upload-icon {
-            font-size: 28px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            display: inline-block;
-        }
-
-        .upload-text {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .upload-text span {
-            color: var(--color-primary);
-            font-weight: 500;
-        }
-
-        .uploaded-media-list {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .media-item {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-tertiary);
-            transition: var(--transition-smooth);
-        }
-
-        .media-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .media-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--border-hover);
-        }
-
-        .media-item-delete {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: rgba(15, 23, 42, 0.7);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .media-item:hover .media-item-delete {
-            opacity: 1;
-        }
-
-        .media-item-delete:hover {
-            background-color: var(--color-error);
-        }
-
-        /* Platform Tabs & Content (Right Panel) */
-        .platform-tab-nav {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border: none;
-            background: none;
-            color: var(--text-secondary);
-            font-family: var(--font-title);
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: var(--radius-sm);
-            transition: var(--transition-smooth);
-            white-space: nowrap;
-        }
-
-        .tab-btn:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .tab-btn.active {
-            background-color: var(--color-primary-light);
-            color: var(--color-primary);
-        }
-
-        .platform-icon {
-            width: 18px;
-            height: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .tab-content-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .tab-content {
-            display: none;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Banner Style (AI Explainer & Tips) */
-        .banner {
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            border: 1px solid transparent;
-        }
-
-        .banner-info {
-            background-color: var(--color-primary-light);
-            border-color: rgba(79, 70, 229, 0.15);
-            color: var(--color-primary);
-        }
-
-        .banner-success {
-            background-color: var(--color-success-light);
-            border-color: rgba(16, 185, 129, 0.15);
-            color: var(--color-success);
-        }
-
-        .banner-warning {
-            background-color: var(--color-warning-light);
-            border-color: rgba(245, 158, 11, 0.15);
-            color: var(--color-warning);
-        }
-
-        .banner-icon {
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-
-        /* Tag Cloud Input */
-        .tag-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            border-radius: var(--radius-sm);
-        }
-
-        .tag-pill {
-            display:inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-full);
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .tag-delete {
-            cursor: pointer;
-            border: none;
-            background: none;
-            color: var(--text-muted);
-            font-size: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .tag-delete:hover {
-            color: var(--color-error);
-        }
-
-        .tag-input {
-            border: none;
-            outline: none;
-            background: none;
-            font-family: var(--font-sans);
-            font-size: 13px;
-            padding: 2px 4px;
-            color: var(--text-primary);
-            flex-grow: 1;
-            min-width: 100px;
-        }
-
-        /* Buttons & Footer */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 20px;
-            font-family: var(--font-title);
-            font-weight: 600;
-            font-size: 14px;
-            border: 1px solid transparent;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: var(--color-primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--color-primary-hover);
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
-        }
-
-        .btn-primary:disabled {
-            background-color: var(--text-muted);
-            color: white;
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background-color: var(--bg-secondary);
-            border-color: var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--border-hover);
-            color: var(--text-primary);
-            background-color: var(--bg-tertiary);
-        }
-
-        .footer-action-bar {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .right-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .publish-select {
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            font-family: var(--font-title);
-            font-weight: 500;
-            cursor: pointer;
-            outline: none;
-        }
-
-        /* Adaptation Pipeline Log Drawer */
-        .pipeline-logs {
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            max-height: 180px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logs-header {
-            padding: 10px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: var(--bg-primary);
-        }
-
-        .logs-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .logs-content {
-            padding: 12px 24px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 11px;
-            color: var(--text-secondary);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex-grow: 1;
-            height: 100px;
-        }
-
-        .log-entry {
-            display: flex;
-            gap: 8px;
-        }
-
-        .log-time { color: var(--text-muted); }
-        .log-type-info { color: var(--color-primary); }
-        .log-type-success { color: var(--color-success); }
-        .log-type-error { color: var(--color-error); }
-
-        /* Empty State */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 24px;
-            text-align: center;
-            color: var(--text-secondary);
-            gap: 16px;
-            flex-grow: 1;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            color: var(--text-muted);
-        }
-
-        /* Mock Detail Preview Modal Frame */
-        .preview-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .preview-modal.active {
-            display: flex;
-        }
-
-        .modal-container {
-            width: 100%;
-            max-width: 900px;
-            height: 90%;
-            background-color: var(--bg-secondary);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes modalScale {
-            from { transform: scale(0.9) translateY(20px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
-
-        .modal-close:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            flex: 1;
-            overflow-y: auto;
-            background-color: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        /* Mock Platform Shell Styles */
-
-        /* 1. Xiaohongshu Phone Shell Mock */
+        /* Mock platform styles */
         .xiaohongshu-mock {
-            width: 375px;
-            min-height: 600px;
-            background-color: #ffffff;
-            border: 12px solid #0f172a;
-            border-radius: 36px;
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #333333;
         }
-
-        .phone-status-bar {
-            height: 24px;
-            background-color: #ffffff;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .xhs-header {
-            height: 44px;
-            border-bottom: 1px solid #f2f2f2;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-        }
-
-        .xhs-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .xhs-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background-color: var(--color-primary);
-            background-image: linear-gradient(135deg, #ff4d4f, #ff7a45);
-        }
-
-        .xhs-username {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .xhs-follow-btn {
-            font-size: 11px;
-            border: 1px solid #ff2442;
-            color: #ff2442;
-            padding: 2px 10px;
-            border-radius: var(--radius-full);
-            font-weight: 600;
-        }
-
-        .xhs-carousel {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1;
-            background-color: #f7f7f7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .xhs-carousel img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .xhs-dots {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 4px;
-        }
-
-        .xhs-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .xhs-dot.active {
-            background-color: #ff2442;
-        }
-
-        .xhs-content-area {
-            padding: 16px;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .xhs-title {
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.4;
-            margin-bottom: 8px;
-            color: #000;
-        }
-
-        .xhs-body {
-            font-size: 13.5px;
-            line-height: 1.6;
-            color: #333;
-            white-space: pre-wrap;
-            margin-bottom: 12px;
-        }
-
-        .xhs-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            color: #13386c;
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
-
-        .xhs-time {
-            font-size: 10px;
-            color: #999999;
-        }
-
-        .xhs-footer {
-            height: 48px;
-            border-top: 1px solid #f2f2f2;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            background-color: #ffffff;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .xhs-action-icons {
-            display: flex;
-            gap: 16px;
-        }
-
-        .xhs-icon-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* 2. Zhihu PC Mock */
         .zhihu-mock {
-            width: 100%;
-            max-width: 690px;
-            background-color: #ffffff;
-            border: 1px solid #ebebeb;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
             font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,sans-serif;
-            color: #1a1a1a;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
         }
-
-        .zhihu-title {
-            font-size: 22px;
-            font-weight: 600;
-            line-height: 1.4;
-            color: #121212;
-        }
-
-        .zhihu-author {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .zhihu-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 4px;
-            background-image: linear-gradient(135deg, #0084ff, #0055ff);
-        }
-
-        .zhihu-author-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .zhihu-author-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #444;
-        }
-
-        .zhihu-author-bio {
-            font-size: 12px;
-            color: #646464;
-        }
-
-        .zhihu-content {
-            font-size: 15px;
-            line-height: 1.7;
-            color: #1a1a1a;
-            white-space: pre-wrap;
-        }
-
-        .zhihu-content h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 18px 0 8px 0;
-            border-left: 4px solid #0084ff;
-            padding-left: 10px;
-        }
-
-        .zhihu-content img {
-            max-width: 100%;
-            border-radius: 4px;
-            margin: 12px auto;
-            display: block;
-        }
-
-        .zhihu-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 16px;
-            border-top: 1px solid #f6f6f6;
-        }
-
-        .zhihu-btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .zhihu-vote-btn {
-            background-color: rgba(0, 132, 255, 0.1);
-            color: #0084ff;
-            padding: 8px 12px;
-            border-radius: 3px;
-            font-size: 14px;
-            font-weight: 500;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* 3. WeChat Article Mobile Mock */
         .wechat-mock {
-            width: 375px;
-            min-height: 600px;
-            background-color: #ffffff;
-            border: 12px solid #0f172a;
-            border-radius: 36px;
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
             font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,sans-serif;
-            color: #333333;
         }
-
-        .wechat-body {
-            padding: 20px 16px;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-
-        .wechat-title {
-            font-size: 22px;
-            font-weight: 700;
-            line-height: 1.4;
-            color: #000000;
-            margin-bottom: 12px;
-        }
-
-        .wechat-meta {
-            font-size: 13px;
-            color: #999999;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .wechat-meta-author {
-            color: #576b95;
-            font-weight: 500;
-        }
-
-        .wechat-content {
-            font-size: 15px;
-            line-height: 1.75;
-            color: #333333;
-            white-space: pre-wrap;
-        }
-
-        .wechat-content h2 {
-            font-size: 17px;
-            font-weight: 700;
-            color: #4f46e5;
-            margin: 24px 0 12px 0;
-            text-align: center;
-        }
-
-        .wechat-content img {
-            max-width: 100%;
-            border-radius: 4px;
-            margin: 12px 0;
-        }
-
-        /* 4. Bilibili Mock */
         .bilibili-mock {
-            width: 100%;
-            max-width: 700px;
-            background-color: #ffffff;
-            border: 1px solid #e3e8ec;
-            border-radius: 8px;
-            box-shadow: var(--shadow-sm);
             font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,Arial,sans-serif;
-            color: #222222;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .bili-category {
-            font-size: 12px;
-            color: #00aeec;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .bili-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #212121;
-            line-height: 1.3;
-        }
-
-        .bili-meta {
-            font-size: 12px;
-            color: #999;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e3e8ec;
-        }
-
-        .bili-content {
-            font-size: 16px;
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-
-        .bili-content h2 {
-            font-size: 19px;
-            margin: 20px 0 10px 0;
-            color: #212121;
-        }
-
-        .bili-footer {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            padding-top: 16px;
-            border-top: 1px solid #e3e8ec;
-            color: #777;
-            font-size: 13px;
-        }
-
-        .bili-icon-action {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .bili-icon-action:hover {
-            color: #00aeec;
-        }
-
-        /* SVG Icons Inline */
-        .icon {
-            width: 1em;
-            height: 1em;
-            vertical-align: -0.125em;
-            fill: currentColor;
-            overflow: hidden;
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-50/40 text-slate-800 min-height-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header>
-        <div class="logo-area">
-            <div class="logo-icon">P</div>
-            <h1 class="logo-text" style="margin: 0; font-size: 20px;">Pulse Distro</h1>
+    <header class="sticky top-0 z-50 h-16 flex items-center justify-between px-6 border-b border-slate-200/50 glass-header shadow-sm transition-all duration-300">
+        <div class="flex items-center gap-2.5">
+            <!-- Minimalist Outline Logo -->
+            <div class="w-8 h-8 rounded-lg border border-slate-300 flex items-center justify-center font-title font-bold text-slate-800 text-sm shadow-sm bg-white">
+                P
+            </div>
+            <h1 class="font-title text-base font-semibold tracking-tight text-slate-800 m-0">
+                Pulse <span class="font-light text-slate-400">Distro</span>
+            </h1>
         </div>
         
-        <div class="sys-status-bar">
-            <!-- H2 Connection status -->
-            <div class="status-badge">
-                <span class="status-indicator online"></span>
-                <span>H2: Connected</span>
+        <div class="flex items-center gap-4">
+            <!-- Connection statuses in Soft Gray Minimalism -->
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100/80 border border-slate-200/40 text-slate-600 shadow-2xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>H2 DB: Connected</span>
             </div>
             
-            <!-- Chrome plugin connection status -->
-            <div class="status-badge" style="cursor:pointer;" onclick="togglePlugin()">
-                <span id="plugin-indicator" class="status-indicator offline"></span>
-                <span id="plugin-text">Chrome Extension: Offline</span>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100/80 border border-slate-200/40 text-slate-600 cursor-pointer hover:bg-slate-200/60 shadow-2xs transition-all" onclick="togglePlugin()">
+                <span id="plugin-indicator" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                <span id="plugin-text">Extension: Offline</span>
             </div>
 
-            <!-- AI Engine state -->
-            <div class="status-badge">
-                <span class="status-indicator online"></span>
-                <span>AI Engine: Template Fallback</span>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100/80 border border-slate-200/40 text-slate-600 shadow-2xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>AI: Template</span>
             </div>
-        </div>
-
-        <div class="controls-area">
-            <!-- Theme toggle -->
-            <button class="icon-btn" onclick="toggleTheme()" title="切换主题">
-                <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M512 853.333333A341.333333 341.333333 0 1 1 853.333333 512a341.333333 341.333333 0 0 1-341.333333 341.333333z m0-64A277.333333 277.333333 0 1 0 234.666667 512 277.333333 277.333333 0 0 0 512 789.333333z" fill="currentColor"></path></svg>
-            </button>
         </div>
     </header>
 
-    <!-- Workspace Container -->
-    <div class="workspace">
+    <!-- Main Workspace Container -->
+    <div class="flex flex-1 h-[calc(100vh-64px)] overflow-hidden">
         
-        <!-- Left Side: Content Input & Media upload -->
-        <div class="input-panel">
-            <div class="panel-header">
-                <span class="panel-title">
-                    <svg class="icon" viewBox="0 0 1024 1024" width="16" height="16"><path d="M832 64H192c-35.3 0-64 28.7-64 64v768c0 35.3 28.7 64 64 64h640c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64zM512 768c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z m256-256H256V192h512v320z" fill="currentColor"></path></svg>
+        <!-- Left Side: Content Input & Media upload (Glass Panel) -->
+        <div class="w-[42%] border-r border-slate-200/50 glass-panel flex flex-col overflow-y-auto">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-title text-sm font-semibold text-slate-800 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 1024 1024"><path d="M832 64H192c-35.3 0-64 28.7-64 64v768c0 35.3 28.7 64 64 64h640c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64zM512 768c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z m256-256H256V192h512v320z" fill="currentColor"></path></svg>
                     原始内容工作台
                 </span>
-                <span class="status-badge" style="font-size: 11px;">Draft</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/40">草稿箱</span>
             </div>
             
-            <div class="panel-body">
+            <div class="p-6 flex flex-col gap-5">
                 <!-- Raw Title -->
-                <div class="form-group">
-                    <label class="form-label" for="raw-title">原始标题</label>
-                    <input type="text" id="raw-title" class="form-input" placeholder="输入文章原始标题..." value="别再复制粘贴了！跨平台自媒体智能分发指南">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="raw-title">原始标题</label>
+                    <input type="text" id="raw-title" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-sm" placeholder="输入文章原始标题..." value="别再复制粘贴了！跨平台自媒体智能分发指南">
                 </div>
 
                 <!-- Source selection -->
-                <div class="form-group">
-                    <label class="form-label" for="source-type">输入格式</label>
-                    <select id="source-type" class="form-input" style="width: 120px; font-weight: 500;">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="source-type">输入格式</label>
+                    <select id="source-type" class="w-[120px] px-3 py-1.5 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-700 text-xs font-medium focus:outline-none focus:border-slate-400 transition-all">
                         <option value="MARKDOWN">Markdown</option>
                         <option value="TEXT">纯文本</option>
                         <option value="DOCX">DOCX 文档</option>
@@ -1240,9 +131,9 @@
                 </div>
 
                 <!-- Raw Body editor -->
-                <div class="form-group">
-                    <label class="form-label" for="raw-content">内容正文</label>
-                    <textarea id="raw-content" class="form-input form-textarea" placeholder="在此键入或粘贴正文内容(支持Markdown格式)..."># 核心观点
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="raw-content">内容正文</label>
+                    <textarea id="raw-content" class="w-full min-h-[220px] px-3.5 py-3 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-sm resize-y leading-relaxed" placeholder="在此键入或粘贴正文内容(支持Markdown格式)..."># 核心观点
 自媒体创作者每天花在排版和内容复制粘贴上的时间高达 1-2 小时。你需要的是一个自动适配各平台内容调性的一键分发工作流。
 
 ## 1. 平台风格解析
@@ -1257,213 +148,217 @@
                 </div>
 
                 <!-- Media Upload zone -->
-                <div class="form-group">
-                    <label class="form-label">多媒体插图 (建议不超过9张)</label>
-                    <div class="media-uploader" onclick="simulateMediaUpload()">
-                        <span class="upload-icon">⊕</span>
-                        <div class="upload-text">点击或拖拽图片到此处上传 (Mock)</div>
-                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">支持 PNG, JPG, WEBP</div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">多媒体插图 (建议不超过9张)</label>
+                    <div class="border border-dashed border-slate-200 hover:border-slate-300 rounded-xl p-5 text-center cursor-pointer bg-slate-50/50 hover:bg-slate-50 transition-all duration-200" onclick="simulateMediaUpload()">
+                        <span class="text-xl text-slate-400 mb-1 block">⊕</span>
+                        <div class="text-slate-500 text-xs">点击或拖拽图片到此处上传 (Mock)</div>
+                        <div class="text-[10px] text-slate-400 mt-1">支持 PNG, JPG, WEBP</div>
                     </div>
                     
                     <!-- Uploaded Image list -->
-                    <div class="uploaded-media-list" id="media-list">
+                    <div class="grid grid-cols-4 gap-2.5 mt-3" id="media-list">
                         <!-- Default mock images -->
-                        <div class="media-item" id="media-item-1">
-                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200&auto=format&fit=crop&q=60" alt="Workspace">
-                            <button class="media-item-delete" onclick="deleteMedia(1, event)">×</button>
+                        <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200/50 bg-slate-100 group shadow-2xs" id="media-item-1">
+                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200&auto=format&fit=crop&q=60" alt="Workspace" class="w-full h-full object-cover">
+                            <button class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/60 hover:bg-red-500 text-white border-none cursor-pointer flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all duration-200" onclick="deleteMedia(1, event)">×</button>
                         </div>
-                        <div class="media-item" id="media-item-2">
-                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&auto=format&fit=crop&q=60" alt="Analytics">
-                            <button class="media-item-delete" onclick="deleteMedia(2, event)">×</button>
+                        <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200/50 bg-slate-100 group shadow-2xs" id="media-item-2">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&auto=format&fit=crop&q=60" alt="Analytics" class="w-full h-full object-cover">
+                            <button class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/60 hover:bg-red-500 text-white border-none cursor-pointer flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all duration-200" onclick="deleteMedia(2, event)">×</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Primary Action -->
-                <button class="btn btn-primary" style="margin-top: 10px; height: 44px;" id="btn-adapt" onclick="startAdaptation()">
+                <!-- Soft / Low-saturation Generation Button -->
+                <button class="mt-2 w-full h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-title font-semibold text-xs transition-all duration-200 cursor-pointer shadow-2xs" id="btn-adapt" onclick="startAdaptation()">
                     开始生成多平台适配内容 (WebSocket 异步)
                 </button>
             </div>
         </div>
 
         <!-- Right Side: Adapt preview & Platform outputs -->
-        <div class="output-panel">
+        <div class="flex-1 flex flex-col overflow-hidden bg-slate-50/10">
             <!-- Platform navigation tabs -->
-            <div class="platform-tab-nav">
-                <button class="tab-btn active" onclick="switchTab('origin')">
-                    <span class="platform-icon">📋</span>
-                    原始内容
+            <div class="flex items-center gap-2 px-6 py-2.5 bg-white/70 border-b border-slate-200/50 overflow-x-auto glass-header">
+                <button class="tab-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-500 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer active" onclick="switchTab('origin')">
+                    <span>📋</span> 原始内容
                 </button>
-                <button class="tab-btn" onclick="switchTab('xiaohongshu')" id="tab-xiaohongshu">
-                    <span class="platform-icon">📕</span>
-                    小红书 <span class="status-indicator offline" id="badge-xiaohongshu" style="margin-left: 4px;"></span>
+                <button class="tab-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-500 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer" onclick="switchTab('xiaohongshu')" id="tab-xiaohongshu">
+                    <span>📕</span> 小红书 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 ml-1" id="badge-xiaohongshu"></span>
                 </button>
-                <button class="tab-btn" onclick="switchTab('zhihu')" id="tab-zhihu">
-                    <span class="platform-icon">💬</span>
-                    知乎 <span class="status-indicator offline" id="badge-zhihu" style="margin-left: 4px;"></span>
+                <button class="tab-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-500 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer" onclick="switchTab('zhihu')" id="tab-zhihu">
+                    <span>💬</span> 知乎 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 ml-1" id="badge-zhihu"></span>
                 </button>
-                <button class="tab-btn" onclick="switchTab('wechat')" id="tab-wechat">
-                    <span class="platform-icon">🟢</span>
-                    微信公众号 <span class="status-indicator offline" id="badge-wechat" style="margin-left: 4px;"></span>
+                <button class="tab-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-500 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer" onclick="switchTab('wechat')" id="tab-wechat">
+                    <span>🟢</span> 微信公众号 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 ml-1" id="badge-wechat"></span>
                 </button>
-                <button class="tab-btn" onclick="switchTab('bilibili')" id="tab-bilibili">
-                    <span class="platform-icon">📺</span>
-                    B站专栏 <span class="status-indicator offline" id="badge-bilibili" style="margin-left: 4px;"></span>
+                <button class="tab-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-500 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-all border-none bg-transparent cursor-pointer" onclick="switchTab('bilibili')" id="tab-bilibili">
+                    <span>📺</span> B站专栏 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 ml-1" id="badge-bilibili"></span>
                 </button>
             </div>
 
             <!-- Tab Content Area -->
-            <div class="tab-content-container" id="tab-container">
+            <div class="flex-grow overflow-y-auto p-6 flex flex-col gap-6" id="tab-container">
                 
                 <!-- 1. Original View -->
-                <div class="tab-content active" id="content-origin">
-                    <div class="banner banner-info">
-                        <span class="banner-icon">ℹ️</span>
+                <div class="tab-content hidden flex-col gap-5 active" id="content-origin">
+                    <!-- Clean Minimal AI Explainer -->
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/40 text-xs text-slate-500 leading-relaxed flex gap-3 items-start">
+                        <span class="text-sm">ℹ️</span>
                         <div>
-                            <strong>提示</strong>：左侧输入的原始内容是生成各个平台版本的基础。在点击“开始生成多平台适配内容”后，智能引擎将基于不同的平台风格指南和限制规则，进行异步改写。
+                            原始内容是智能分发的基础。在点击生成后，系统将读取对应平台的 JSON 约束配置，并利用大模型（或模板降级）智能转换文风与格式。
                         </div>
                     </div>
                     
-                    <div class="empty-state" id="empty-state-origin">
-                        <div class="empty-icon">🛠️</div>
-                        <div style="font-family: var(--font-title); font-size: 16px; font-weight: 500;">准备就绪</div>
-                        <p style="font-size: 13px; color: var(--text-secondary); max-width: 320px;">
-                            完善原始内容和多媒体插图，然后点击左侧的“开始生成”按钮启动流水线。
+                    <div class="flex flex-col items-center justify-center py-20 text-center text-slate-400 gap-4 flex-grow" id="empty-state-origin">
+                        <div class="text-4xl">🛠️</div>
+                        <div class="font-title text-sm font-semibold text-slate-600">等待生成适配</div>
+                        <p class="text-xs max-w-[280px] text-slate-400 leading-relaxed">
+                            请先在左侧输入需要适配的原始内容，然后点击生成按钮启动异步转换流程。
                         </p>
                     </div>
                 </div>
 
                 <!-- 2. Xiaohongshu View -->
-                <div class="tab-content" id="content-xiaohongshu">
-                    <div class="banner banner-info" id="xhs-banner">
-                        <span class="banner-icon">🤖</span>
+                <div class="tab-content hidden flex-col gap-5" id="content-xiaohongshu">
+                    <!-- Subtle AI Explainer -->
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/40 text-xs text-slate-500 leading-relaxed flex gap-3 items-start">
+                        <span class="text-sm">🤖</span>
                         <div>
-                            <strong>AI 改写思路</strong>：口语化种草风格，增加了大量的 Emoji 表情符号，段落做了极简化分割，并追加了匹配的热门话题标签。
+                            <strong>小红书风格策略</strong>：改写为适合种草的口语化表达，嵌入自然丰富的 Emoji 表情，极度精简段落，并附带相关的热门话题标签。
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <div style="display: flex; justify-content: space-between;">
-                            <label class="form-label" for="xhs-title">小红书标题 (限20字)</label>
-                            <span class="form-label" id="xhs-title-counter" style="font-size: 11px;">0/20</span>
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="xhs-title">小红书标题 (限20字)</label>
+                            <span class="text-xs text-slate-400" id="xhs-title-counter">0/20</span>
                         </div>
-                        <input type="text" id="xhs-title" class="form-input" oninput="validateLength('xhs-title', 20)">
+                        <input type="text" id="xhs-title" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all" oninput="validateLength('xhs-title', 20)">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="xhs-body">小红书正文 (限1000字)</label>
-                        <textarea id="xhs-body" class="form-input form-textarea" style="min-height: 200px;"></textarea>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="xhs-body">小红书正文 (限1000字)</label>
+                        <textarea id="xhs-body" class="w-full min-h-[180px] px-3.5 py-3 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all resize-y leading-relaxed"></textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">小红书话题标签 (限10个)</label>
-                        <div class="tag-container" id="xhs-tags-container">
-                            <input type="text" class="tag-input" id="xhs-tag-input" placeholder="回车添加标签..." onkeydown="handleTagInput(event, 'xhs')">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">话题标签 (限10个)</label>
+                        <div class="flex flex-wrap gap-2 p-2.5 border border-slate-200/60 bg-slate-50/50 rounded-lg" id="xhs-tags-container">
+                            <input type="text" class="border-none outline-none bg-transparent text-xs text-slate-700 p-1 flex-grow min-w-[100px]" id="xhs-tag-input" placeholder="回车添加标签..." onkeydown="handleTagInput(event, 'xhs')">
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. Zhihu View -->
-                <div class="tab-content" id="content-zhihu">
-                    <div class="banner banner-info">
-                        <span class="banner-icon">🤖</span>
+                <div class="tab-content hidden flex-col gap-5" id="content-zhihu">
+                    <!-- Subtle AI Explainer -->
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/40 text-xs text-slate-500 leading-relaxed flex gap-3 items-start">
+                        <span class="text-sm">🤖</span>
                         <div>
-                            <strong>AI 改写思路</strong>：专栏结构化排版，使用了标准的 Markdown 格式，语气专业理性，重点使用引用块（Blockquote）加以强调。
+                            <strong>知乎风格策略</strong>：强调客观理性的技术探讨文风，保留精细排版的 Markdown 语法与代码块高亮，使用引用段落辅助核心观点传达。
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <div style="display: flex; justify-content: space-between;">
-                            <label class="form-label" for="zhihu-title">知乎标题 (限80字)</label>
-                            <span class="form-label" id="zhihu-title-counter" style="font-size: 11px;">0/80</span>
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="zhihu-title">知乎标题 (限80字)</label>
+                            <span class="text-xs text-slate-400" id="zhihu-title-counter">0/80</span>
                         </div>
-                        <input type="text" id="zhihu-title" class="form-input" oninput="validateLength('zhihu-title', 80)">
+                        <input type="text" id="zhihu-title" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all" oninput="validateLength('zhihu-title', 80)">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="zhihu-body">知乎正文 (支持Markdown)</label>
-                        <textarea id="zhihu-body" class="form-input form-textarea" style="min-height: 240px; font-family: monospace;"></textarea>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="zhihu-body">知乎正文 (支持Markdown)</label>
+                        <textarea id="zhihu-body" class="w-full min-h-[220px] px-3.5 py-3 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm font-mono focus:outline-none focus:border-slate-400 focus:bg-white transition-all resize-y leading-relaxed"></textarea>
                     </div>
                 </div>
 
                 <!-- 4. WeChat View -->
-                <div class="tab-content" id="content-wechat">
-                    <div class="banner banner-info">
-                        <span class="banner-icon">🤖</span>
+                <div class="tab-content hidden flex-col gap-5" id="content-wechat">
+                    <!-- Subtle AI Explainer -->
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/40 text-xs text-slate-500 leading-relaxed flex gap-3 items-start">
+                        <span class="text-sm">🤖</span>
                         <div>
-                            <strong>AI 改写思路</strong>：公众号长文阅读排版，标题采用吸引眼球的风格，增加了导语段落设计，每个主段落开头均采用带色块的段落小标题样式。
+                            <strong>微信公众号风格策略</strong>：深度长文模式排版，标题强调社群和痛点共鸣，开头添加导言摘要，正文植入带主视觉色块的排版样式。
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="wechat-title">公众号文章标题</label>
-                        <input type="text" id="wechat-title" class="form-input">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="wechat-title">公众号标题</label>
+                        <input type="text" id="wechat-title" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="wechat-summary">文章摘要</label>
-                        <input type="text" id="wechat-summary" class="form-input" placeholder="用于移动端卡片展示的摘要...">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="wechat-summary">文章卡片摘要</label>
+                        <input type="text" id="wechat-summary" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all" placeholder="用于微信分享卡片展示的引流摘要...">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="wechat-body">公众号正文 (HTML排版)</label>
-                        <textarea id="wechat-body" class="form-input form-textarea" style="min-height: 240px;"></textarea>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="wechat-body">公众号正文 (HTML富文本排版)</label>
+                        <textarea id="wechat-body" class="w-full min-h-[220px] px-3.5 py-3 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all resize-y leading-relaxed"></textarea>
                     </div>
                 </div>
 
                 <!-- 5. Bilibili View -->
-                <div class="tab-content" id="content-bilibili">
-                    <div class="banner banner-info">
-                        <span class="banner-icon">🤖</span>
+                <div class="tab-content hidden flex-col gap-5" id="content-bilibili">
+                    <!-- Subtle AI Explainer -->
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/40 text-xs text-slate-500 leading-relaxed flex gap-3 items-start">
+                        <span class="text-sm">🤖</span>
                         <div>
-                            <strong>AI 改写思路</strong>：B站专栏动态，采用轻松幽默的“Up主”语气，开头与末尾加入了极富互动性的三连（点赞、投币、收藏）引导。
+                            <strong>B站专栏风格策略</strong>：Up主日常分享语气，语言活泼年轻化，并包含极富社区特色的“投币、收藏、点赞”互动引导语。
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="bili-title">B站专栏标题</label>
-                        <input type="text" id="bili-title" class="form-input">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="bili-title">B站专栏标题</label>
+                        <input type="text" id="bili-title" class="w-full px-3.5 py-2 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all">
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="bili-body">B站专栏正文</label>
-                        <textarea id="bili-body" class="form-input form-textarea" style="min-height: 240px;"></textarea>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider" for="bili-body">B站专栏正文</label>
+                        <textarea id="bili-body" class="w-full min-h-[220px] px-3.5 py-3 border border-slate-200/60 rounded-lg bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all resize-y leading-relaxed"></textarea>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Pipeline real-time logs -->
-            <div class="pipeline-logs">
-                <div class="logs-header">
-                    <div class="logs-title">
-                        <span class="status-indicator online" id="pipeline-light" style="background-color: var(--text-muted); box-shadow: none;"></span>
-                        事件管道与WebSocket日志监听 (userToken: ut_demo_user)
+            <!-- Pipeline real-time logs (Glass Panel Overlay) -->
+            <div class="border-t border-slate-200/50 bg-white/80 backdrop-blur-md max-h-[160px] flex flex-col shadow-inner">
+                <div class="px-6 py-2 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <span id="pipeline-light" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        事件管道与WebSocket日志监听 (ut_demo_user)
                     </div>
-                    <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px;" onclick="clearLogs()">清空日志</button>
+                    <button class="border border-slate-200 hover:bg-slate-100 rounded px-2 py-0.5 text-[10px] font-medium text-slate-500 cursor-pointer bg-white" onclick="clearLogs()">清空日志</button>
                 </div>
-                <div class="logs-content" id="logs-area">
-                    <div class="log-entry">
-                        <span class="log-time">[20:46:06]</span>
-                        <span class="log-type-info">[INFO]</span>
+                <div class="p-4 overflow-y-auto font-mono text-[11px] text-slate-500 flex flex-col gap-1.5 h-28" id="logs-area">
+                    <div class="flex gap-2">
+                        <span class="text-slate-400">[21:17:58]</span>
+                        <span class="text-slate-400">[INFO]</span>
                         <span>WebSocket 管道初始化完毕，等待任务触发...</span>
                     </div>
                 </div>
             </div>
 
             <!-- Footer Action control bar -->
-            <div class="footer-action-bar">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <label class="form-label" style="margin-bottom: 0;">发布模式:</label>
-                    <select class="publish-select" id="publish-mode" onchange="onPublishModeChange()">
+            <div class="px-6 py-4 border-t border-slate-200/50 bg-white/80 backdrop-blur-md flex items-center justify-between glass-header">
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-semibold text-slate-500">分发发布模式:</label>
+                    <select class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-white focus:outline-none cursor-pointer" id="publish-mode" onchange="onPublishModeChange()">
                         <option value="mock">模拟发布 (Mock Publisher)</option>
                         <option value="real">真实发布 (Chrome Extension)</option>
                     </select>
                 </div>
                 
-                <div class="right-actions">
-                    <button class="btn btn-secondary" onclick="resetWorkstation()">重置页面</button>
-                    <button class="btn btn-primary" id="btn-publish" onclick="startPublishing()" disabled>一键发布到已勾选平台</button>
+                <div class="flex gap-3">
+                    <button class="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-medium text-slate-600 transition-all cursor-pointer bg-white" onclick="resetWorkstation()">重置页面</button>
+                    
+                    <!-- Soft Neutral Elegant Primary Button -->
+                    <button class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-title font-semibold text-xs rounded-lg transition-all duration-200 cursor-pointer shadow-sm" id="btn-publish" onclick="startPublishing()" disabled>
+                        一键发布到已勾选平台
+                    </button>
                 </div>
             </div>
         </div>
@@ -1471,13 +366,13 @@
     </div>
 
     <!-- Preview Modal -->
-    <div class="preview-modal" id="preview-modal" onclick="closePreviewModal(event)">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <span class="panel-title" id="modal-platform-title">平台模拟发布预览</span>
-                <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+    <div class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-5" id="preview-modal" onclick="closePreviewModal(event)">
+        <div class="w-full max-w-[900px] h-[90%] bg-white rounded-2xl border border-slate-200/60 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200" onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-title text-sm font-semibold text-slate-800" id="modal-platform-title">平台模拟发布预览</span>
+                <button class="w-8 h-8 rounded-full border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-500 font-light cursor-pointer transition-all bg-white" onclick="closePreviewModal()">&times;</button>
             </div>
-            <div class="modal-body" id="modal-body-content">
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50 flex justify-center items-start" id="modal-body-content">
                 <!-- Substituted based on selected platform -->
             </div>
         </div>
@@ -1486,7 +381,6 @@
     <!-- Javascript Logical Simulation -->
     <script>
         // State variables
-        let isDarkMode = false;
         let isPluginOnline = false;
         let adaptationDone = false;
         let currentActiveTab = 'origin';
@@ -1505,12 +399,6 @@
         const btnAdapt = document.getElementById('btn-adapt');
         const btnPublish = document.getElementById('btn-publish');
         
-        // Theme toggle logic
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-        }
-
         // Plugin mock toggle logic
         function togglePlugin() {
             isPluginOnline = !isPluginOnline;
@@ -1518,12 +406,12 @@
             const text = document.getElementById('plugin-text');
             
             if (isPluginOnline) {
-                indicator.className = 'status-indicator online';
-                text.innerText = 'Chrome Extension: Online (v1.0.0)';
+                indicator.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+                text.innerText = 'Extension: Online (v1.0.0)';
                 addLog('INFO', 'Chrome 浏览器分发插件成功握手连接，SessionId: plugin-session-882');
             } else {
-                indicator.className = 'status-indicator offline';
-                text.innerText = 'Chrome Extension: Offline';
+                indicator.className = 'w-1.5 h-1.5 rounded-full bg-slate-400';
+                text.innerText = 'Extension: Offline';
                 addLog('WARN', 'Chrome 浏览器分发插件连接断开。');
             }
         }
@@ -1534,7 +422,7 @@
             const item = document.getElementById(`media-item-${id}`);
             if (item) {
                 item.remove();
-                addLog('INFO', `媒体资源 mediaId: ${500 + id} 已被移除。`);
+                addLog('INFO', `媒体资源 mediaId: ${500 + id} 已被从原始内容中移除。`);
             }
         }
 
@@ -1552,11 +440,11 @@
             const mediaList = document.getElementById('media-list');
             
             const mediaItem = document.createElement('div');
-            mediaItem.className = 'media-item';
+            mediaItem.className = 'relative aspect-square rounded-lg overflow-hidden border border-slate-200/50 bg-slate-100 group shadow-2xs animate-in zoom-in-90 duration-150';
             mediaItem.id = `media-item-${mediaCount}`;
             mediaItem.innerHTML = `
-                <img src="${newImgUrl}" alt="Mock Resource">
-                <button class="media-item-delete" onclick="deleteMedia(${mediaCount}, event)">×</button>
+                <img src="${newImgUrl}" alt="Mock Resource" class="w-full h-full object-cover">
+                <button class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/60 hover:bg-red-500 text-white border-none cursor-pointer flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all duration-200" onclick="deleteMedia(${mediaCount}, event)">×</button>
             `;
             
             mediaList.appendChild(mediaItem);
@@ -1567,15 +455,15 @@
         function addLog(type, message) {
             const timeStr = new Date().toTimeString().split(' ')[0];
             const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
+            logEntry.className = 'flex gap-2 animate-in slide-in-from-bottom-2 duration-150';
             
             let typeSpan = '';
-            if (type === 'INFO') typeSpan = '<span class="log-type-info">[INFO]</span>';
-            else if (type === 'SUCCESS') typeSpan = '<span class="log-type-success">[SUCCESS]</span>';
-            else if (type === 'ERROR') typeSpan = '<span class="log-type-error">[ERROR]</span>';
-            else if (type === 'WARN') typeSpan = '<span class="log-type-warning" style="color: var(--color-warning);">[WARN]</span>';
+            if (type === 'INFO') typeSpan = '<span class="text-slate-400">[INFO]</span>';
+            else if (type === 'SUCCESS') typeSpan = '<span class="text-emerald-600">[SUCCESS]</span>';
+            else if (type === 'ERROR') typeSpan = '<span class="text-red-500">[ERROR]</span>';
+            else if (type === 'WARN') typeSpan = '<span class="text-amber-500">[WARN]</span>';
             
-            logEntry.innerHTML = `<span class="log-time">[${timeStr}]</span> ${typeSpan} <span>${message}</span>`;
+            logEntry.innerHTML = `<span class="text-slate-400">[${timeStr}]</span> ${typeSpan} <span>${message}</span>`;
             logsArea.appendChild(logEntry);
             logsArea.scrollTop = logsArea.scrollHeight;
         }
@@ -1589,20 +477,24 @@
             currentActiveTab = tabId;
             const tabButtons = document.querySelectorAll('.tab-btn');
             tabButtons.forEach(btn => {
-                if (btn.id === `tab-${tabId}` || (tabId === 'origin' && btn.innerText.includes('原始内容'))) {
-                    btn.classList.add('active');
+                const btnPlatform = btn.id.replace('tab-', '');
+                if (btnPlatform === tabId || (tabId === 'origin' && btn.innerText.includes('原始内容'))) {
+                    btn.classList.add('active', 'bg-slate-900', 'text-white', 'hover:bg-slate-900');
+                    btn.classList.remove('text-slate-500', 'hover:bg-slate-100');
                 } else {
-                    btn.classList.remove('active');
+                    btn.classList.remove('active', 'bg-slate-900', 'text-white', 'hover:bg-slate-900');
+                    btn.classList.add('text-slate-500', 'hover:bg-slate-100');
                 }
             });
 
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => {
                 if (content.id === `content-${tabId}`) {
-                    content.classList.add('active');
+                    content.classList.add('flex');
+                    content.classList.remove('hidden');
                 } else {
-                    content.classList.remove('remove');
-                    content.classList.remove('active');
+                    content.classList.add('hidden');
+                    content.classList.remove('flex');
                 }
             });
         }
@@ -1619,7 +511,7 @@
 
             btnAdapt.disabled = true;
             btnAdapt.innerText = '正在生成多平台适配 (WebSocket 异步接收中...)';
-            pipelineLight.className = 'status-indicator processing';
+            pipelineLight.className = 'w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse';
             
             addLog('INFO', '已触发 POST /api/tasks/{taskId}/adapt，开始建立流式计算队列...');
             
@@ -1627,7 +519,7 @@
             const platforms = ['xiaohongshu', 'zhihu', 'wechat', 'bilibili'];
             platforms.forEach(p => {
                 const badge = document.getElementById(`badge-${p}`);
-                badge.className = 'status-indicator processing';
+                badge.className = 'w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse ml-1';
             });
 
             // Simulate WebSocket pushed events sequentially
@@ -1635,28 +527,28 @@
             // Step 1: Xiaohongshu
             setTimeout(() => {
                 generateXiaohongshuContent(titleVal, bodyVal);
-                document.getElementById(`badge-xiaohongshu`).className = 'status-indicator online';
+                document.getElementById(`badge-xiaohongshu`).className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1';
                 addLog('SUCCESS', 'WebSocket 接收事件 [PLATFORM_ADAPT_COMPLETED] - 小红书版本生成就绪。');
             }, 800);
 
             // Step 2: Zhihu
             setTimeout(() => {
                 generateZhihuContent(titleVal, bodyVal);
-                document.getElementById(`badge-zhihu`).className = 'status-indicator online';
+                document.getElementById(`badge-zhihu`).className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1';
                 addLog('SUCCESS', 'WebSocket 接收事件 [PLATFORM_ADAPT_COMPLETED] - 知乎专栏版本生成就绪。');
             }, 1500);
 
             // Step 3: WeChat
             setTimeout(() => {
                 generateWechatContent(titleVal, bodyVal);
-                document.getElementById(`badge-wechat`).className = 'status-indicator online';
+                document.getElementById(`badge-wechat`).className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1';
                 addLog('SUCCESS', 'WebSocket 接收事件 [PLATFORM_ADAPT_COMPLETED] - 微信公众号版本生成就绪。');
             }, 2200);
 
             // Step 4: Bilibili
             setTimeout(() => {
                 generateBiliContent(titleVal, bodyVal);
-                document.getElementById(`badge-bilibili`).className = 'status-indicator online';
+                document.getElementById(`badge-bilibili`).className = 'w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1';
                 addLog('SUCCESS', 'WebSocket 接收事件 [PLATFORM_ADAPT_COMPLETED] - B站专栏版本生成就绪。');
                 
                 // Done adaptation state
@@ -1664,16 +556,16 @@
                 btnAdapt.disabled = false;
                 btnAdapt.innerText = '重新生成多平台适配内容';
                 btnPublish.disabled = false;
-                pipelineLight.className = 'status-indicator online';
+                pipelineLight.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
                 
                 // Clear the original empty state and prompt user
                 document.getElementById('empty-state-origin').innerHTML = `
-                    <div class="empty-icon" style="color: var(--color-success);">✓</div>
-                    <div style="font-family: var(--font-title); font-size: 16px; font-weight: 500; color: var(--color-success);">多平台适配生成完成！</div>
-                    <p style="font-size: 13px; color: var(--text-secondary); max-width: 320px; margin-bottom: 12px;">
+                    <div class="text-4xl text-emerald-500">✓</div>
+                    <div class="font-title text-sm font-semibold text-emerald-600">多平台适配生成完成！</div>
+                    <p class="text-xs max-w-[280px] text-slate-400 leading-relaxed mb-2">
                         请在上方切换平台 Tab（小红书/知乎/微信公众号/B站）以查看并微调各个平台的文案。
                     </p>
-                    <button class="btn btn-secondary" onclick="switchTab('xiaohongshu')">立即查看小红书适配版本</button>
+                    <button class="px-3.5 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 cursor-pointer bg-white hover:bg-slate-50 transition-all" onclick="switchTab('xiaohongshu')">立即查看小红书适配版本</button>
                 `;
                 
                 // Automatically switch to show user
@@ -1731,21 +623,21 @@
             document.getElementById('wechat-title').value = '原创翻倍！如何利用轻量化系统搭建自媒体一键发布工作流';
             document.getElementById('wechat-summary').value = '别再手动复制粘贴了！一文解析如何利用 Spring Boot 和 Chrome 插件打通跨平台分发流水线，解放原创生产力。';
             
-            document.getElementById('wechat-body').value = `<section style="padding: 10px; background-color: #f3f4f6; border-left: 4px solid #4f46e5; margin-bottom: 20px;">
-    <p style="font-size: 14px; color: #4b5563; margin: 0;">自媒体创作者每天花在排版和内容复制粘贴上的时间高达 1-2 小时。我们需要的是一套自动适配各平台内容调性的一键分发工作流。</p>
+            document.getElementById('wechat-body').value = `<section style="padding: 10px; background-color: #f8fafc; border-left: 3px solid #64748b; margin-bottom: 20px;">
+    <p style="font-size: 13.5px; color: #475569; margin: 0;">自媒体创作者每天花在排版和内容复制粘贴上的时间高达 1-2 小时。我们需要的是一套自动适配各平台内容调性的一键分发工作流。</p>
 </section>
 
-<h2 style="font-size: 18px; color: #111827; border-bottom: 2px solid #4f46e5; padding-bottom: 6px; margin-top: 30px;">平台风格解析</h2>
-<p>不同的自媒体平台，读者群体的阅读偏好差异巨大：</p>
-<ul style="padding-left: 20px; color: #374151;">
+<h2 style="font-size: 16px; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 6px; margin-top: 24px; font-weight: 600;">平台风格解析</h2>
+<p style="margin-top: 10px; color: #334155;">不同的自媒体平台，读者群体的阅读偏好差异巨大：</p>
+<ul style="padding-left: 20px; color: #475569; margin-top: 8px;">
     <li style="margin-bottom: 8px;"><strong>小红书：</strong>图文卡片风格，文字口语化，适合加大量 Emoji，有明确的话题标签。</li>
     <li style="margin-bottom: 8px;"><strong>知乎：</strong>理性且讲逻辑，保留完整的 Markdown 段落，排版清爽。</li>
     <li style="margin-bottom: 8px;"><strong>微信公众号：</strong>深度长文为主，排版精细，开头要吸引眼球，尾部有引流块。</li>
     <li style="margin-bottom: 8px;"><strong>B站：</strong>专栏或者动态引流为主，口吻年轻接地气。</li>
 </ul>
 
-<h2 style="font-size: 18px; color: #111827; border-bottom: 2px solid #4f46e5; padding-bottom: 6px; margin-top: 30px;">轻量级闭环工程方案</h2>
-<p>在演示或个人实践中，我们不一定非要依赖复杂的分布式调度，可以通过 <strong>Spring Boot 3 + H2 本地文件数据库 + WebSocket 实时管道</strong> 快速搭建一个极简单体。默认模拟发布用于完美答辩演示，配置真实插件注入作为选做能力，既能拿高分，又不耽误敏捷交付！</p>`;
+<h2 style="font-size: 16px; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 6px; margin-top: 24px; font-weight: 600;">轻量级闭环工程方案</h2>
+<p style="margin-top: 10px; color: #334155;">在演示或个人实践中，我们不一定非要依赖复杂的分布式调度，可以通过 <strong>Spring Boot 3 + H2 本地文件数据库 + WebSocket 实时管道</strong> 快速搭建一个极简单体。默认模拟发布用于完美答辩演示，配置真实插件注入作为选做能力，既能拿高分，又不耽误敏捷交付！</p>`;
         }
 
         function generateBiliContent(title, body) {
@@ -1770,10 +662,10 @@
             if (counter) {
                 counter.innerText = `${val.length}/${maxLen}`;
                 if (val.length > maxLen) {
-                    counter.style.color = 'var(--color-error)';
-                    addLog('WARN', `平台格式规则警告：小红书标题已超出 ${maxLen} 字限制！`);
+                    counter.className = 'text-xs text-red-500';
+                    addLog('WARN', `平台格式规则警告：标题已超出 ${maxLen} 字限制！`);
                 } else {
-                    counter.style.color = 'var(--text-muted)';
+                    counter.className = 'text-xs text-slate-400';
                 }
             }
         }
@@ -1810,10 +702,10 @@
             // Render new tags
             tagsData[platform].forEach((tag, idx) => {
                 const pill = document.createElement('span');
-                pill.className = 'tag-pill';
+                pill.className = 'tag-pill inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-500 rounded text-xs animate-in zoom-in-95 duration-100';
                 pill.innerHTML = `
                     #${tag}
-                    <button class="tag-delete" onclick="removeTag('${platform}', ${idx})">×</button>
+                    <button class="cursor-pointer border-none bg-transparent text-slate-400 hover:text-red-500 font-bold p-0 text-[10px]" onclick="removeTag('${platform}', ${idx})">×</button>
                 `;
                 container.insertBefore(pill, input);
             });
@@ -1842,7 +734,7 @@
                 // Badges reset
                 const platforms = ['xiaohongshu', 'zhihu', 'wechat', 'bilibili'];
                 platforms.forEach(p => {
-                    document.getElementById(`badge-${p}`).className = 'status-indicator offline';
+                    document.getElementById(`badge-${p}`).className = 'w-1.5 h-1.5 rounded-full bg-slate-300 ml-1';
                 });
                 
                 // Clear fields
@@ -1860,10 +752,10 @@
                 btnPublish.disabled = true;
                 
                 document.getElementById('empty-state-origin').innerHTML = `
-                    <div class="empty-icon">🛠️</div>
-                    <div style="font-family: var(--font-title); font-size: 16px; font-weight: 500;">准备就绪</div>
-                    <p style="font-size: 13px; color: var(--text-secondary); max-width: 320px;">
-                        完善原始内容和多媒体插图，然后点击左侧的“开始生成”按钮启动流水线。
+                    <div class="text-4xl">🛠️</div>
+                    <div class="font-title text-sm font-semibold text-slate-600">等待生成适配</div>
+                    <p class="text-xs max-w-[280px] text-slate-400 leading-relaxed">
+                        请先在左侧输入需要适配的原始内容，然后点击生成按钮启动异步转换流程。
                     </p>
                 `;
                 
@@ -1900,7 +792,7 @@
                     if (mode === 'mock') {
                         const mockRecordId = 9001 + idx;
                         const mockUrl = `javascript:openMockPreview('${p}')`;
-                        addLog('SUCCESS', `[${p}] 模拟发布成功！生成拟态详情页：<a href="${mockUrl}" style="color: var(--color-primary); text-decoration: underline; font-weight: 500;">点击预览 Mock ${getPlatformName(p)}</a>`);
+                        addLog('SUCCESS', `[${p}] 模拟发布成功！生成拟态详情页：<a href="${mockUrl}" class="text-slate-800 font-semibold underline decoration-slate-300 hover:text-slate-500">点击预览 Mock ${getPlatformName(p)}</a>`);
                     } else {
                         addLog('SUCCESS', `[${p}] 真实发布填表成功！插件已模拟点击 [提交发布] 按钮，页面已跳转。`);
                     }
@@ -1938,40 +830,40 @@
                 const contentVal = document.getElementById('xhs-body').value;
                 
                 bodyElem.innerHTML = `
-                    <div class="xiaohongshu-mock">
-                        <div class="phone-status-bar">
+                    <div class="xiaohongshu-mock w-[375px] min-h-[600px] bg-white border-[12px] border-slate-900 rounded-[36px] shadow-2xl overflow-hidden flex flex-col text-slate-800 text-xs">
+                        <div class="h-6 bg-white px-5 flex justify-between items-center text-[10px] font-semibold text-slate-700">
                             <span>20:46</span>
-                            <span style="display: flex; gap: 4px;">📶 🪫</span>
+                            <span class="flex gap-1">📶 🪫</span>
                         </div>
-                        <div class="xhs-header">
-                            <span style="font-size: 16px;">◀</span>
-                            <div class="xhs-user">
-                                <div class="xhs-avatar"></div>
-                                <span class="xhs-username">极客独立创作者</span>
+                        <div class="h-11 border-b border-slate-100 flex items-center justify-between px-4">
+                            <span class="text-sm cursor-pointer">◀</span>
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-400 to-amber-400"></div>
+                                <span class="font-semibold text-slate-800">极客独立创作者</span>
                             </div>
-                            <span class="xhs-follow-btn">关注</span>
+                            <span class="border border-rose-500 text-rose-500 text-[10px] px-2.5 py-0.5 rounded-full font-semibold">关注</span>
                         </div>
-                        <div class="xhs-carousel">
-                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&auto=format&fit=crop&q=80" alt="Cover Image">
-                            <div class="xhs-dots">
-                                <div class="xhs-dot active"></div>
-                                <div class="xhs-dot"></div>
+                        <div class="relative w-full aspect-square bg-slate-50 flex items-center justify-center">
+                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&auto=format&fit=crop&q=80" alt="Cover Image" class="w-full h-full object-cover">
+                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                                <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                                <div class="w-1.5 h-1.5 rounded-full bg-white/60"></div>
                             </div>
                         </div>
-                        <div class="xhs-content-area">
-                            <div class="xhs-title">${titleVal}</div>
-                            <div class="xhs-body">${contentVal}</div>
-                            <div class="xhs-tags">
+                        <div class="p-4 flex-grow overflow-y-auto">
+                            <div class="text-sm font-bold text-slate-900 mb-2 leading-snug">${titleVal}</div>
+                            <div class="leading-relaxed whitespace-pre-wrap text-slate-700">${contentVal}</div>
+                            <div class="flex flex-wrap gap-1 text-slate-600 font-medium mt-3">
                                 ${tagsData.xhs.map(t => `#${t}`).join(' ')}
                             </div>
-                            <div class="xhs-time">编辑于 今天 20:46 · IP 属地浙江</div>
+                            <div class="text-[9px] text-slate-400 mt-4">编辑于 今天 20:46 · IP 属地浙江</div>
                         </div>
-                        <div class="xhs-footer">
+                        <div class="h-12 border-t border-slate-100 flex items-center justify-between px-4 bg-white text-slate-500">
                             <span>说点什么...</span>
-                            <div class="xhs-action-icons">
-                                <div class="xhs-icon-item">❤️ <span>2.8k</span></div>
-                                <div class="xhs-icon-item">⭐ <span>1.4k</span></div>
-                                <div class="xhs-icon-item">💬 <span>582</span></div>
+                            <div class="flex gap-4">
+                                <div class="flex items-center gap-1">❤️ <span class="text-[10px]">2.8k</span></div>
+                                <div class="flex items-center gap-1">⭐ <span class="text-[10px]">1.4k</span></div>
+                                <div class="flex items-center gap-1">💬 <span class="text-[10px]">582</span></div>
                             </div>
                         </div>
                     </div>
@@ -1982,31 +874,31 @@
                 
                 // Rough markdown renderer mock for zhihu preview
                 let htmlContent = contentVal
-                    .replace(/## (.*)/g, '<h2>$1</h2>')
+                    .replace(/## (.*)/g, '<h2 class="text-base font-bold text-slate-900 border-l-4 border-blue-500 pl-2.5 my-4 m-0">$1</h2>')
                     .replace(/\*   \*\*(.*?)\*\*/g, '<li><strong>$1</strong>')
-                    .replace(/> (.*)/g, '<blockquote style="border-left: 4px solid #d3d3d3; padding-left: 12px; color: #666; margin: 12px 0;">$1</blockquote>')
-                    .replace(/\n\n/g, '<p style="margin-bottom: 12px;"></p>');
+                    .replace(/> (.*)/g, '<blockquote class="border-l-4 border-slate-300 pl-3.5 text-slate-500 my-4">$1</blockquote>')
+                    .replace(/\n\n/g, '<p class="mb-3"></p>');
 
                 bodyElem.innerHTML = `
-                    <div class="zhihu-mock">
-                        <div class="zhihu-title">${titleVal}</div>
-                        <div class="zhihu-author">
-                            <div class="zhihu-avatar"></div>
-                            <div class="zhihu-author-info">
-                                <span class="zhihu-author-name">知乎科技创作者</span>
-                                <span class="zhihu-author-bio">全栈工程师 / 自媒体系统架构师</span>
+                    <div class="zhihu-mock w-full max-w-[680px] bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex flex-col gap-4 text-slate-800 text-sm">
+                        <div class="text-xl font-semibold leading-snug text-slate-900">${titleVal}</div>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded bg-gradient-to-tr from-blue-500 to-indigo-500"></div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-700 text-xs">知乎科技创作者</span>
+                                <span class="text-[10px] text-slate-400">全栈工程师 / 自媒体系统架构师</span>
                             </div>
                         </div>
-                        <div class="zhihu-content">
+                        <div class="leading-relaxed whitespace-pre-wrap text-slate-800">
                             ${htmlContent}
-                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80" alt="Zhihu Content Image">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80" alt="Zhihu Content Image" class="max-w-full rounded border border-slate-100 my-3 block mx-auto">
                         </div>
-                        <div class="zhihu-footer">
-                            <div class="zhihu-btn-group">
-                                <button class="zhihu-vote-btn">▲ 赞同 4.2k</button>
-                                <button class="zhihu-vote-btn" style="background-color: transparent; color: #8590a6;">▼</button>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div class="flex gap-2">
+                                <button class="bg-blue-50 hover:bg-blue-100 text-blue-600 border-none px-3.5 py-1.5 rounded-sm font-medium text-xs flex items-center gap-1.5 cursor-pointer">▲ 赞同 4.2k</button>
+                                <button class="bg-blue-50 hover:bg-blue-100 text-blue-600 border-none px-2.5 py-1.5 rounded-sm text-xs cursor-pointer">▼</button>
                             </div>
-                            <span style="font-size: 14px; color: #8590a6;">💬 128 条评论 · 🔗 分享 · 📂 收藏</span>
+                            <span class="text-xs text-slate-400 cursor-pointer">💬 128 条评论 · 🔗 分享 · 📂 收藏</span>
                         </div>
                     </div>
                 `;
@@ -2016,28 +908,28 @@
                 const contentVal = document.getElementById('wechat-body').value;
 
                 bodyElem.innerHTML = `
-                    <div class="wechat-mock">
-                        <div class="phone-status-bar">
+                    <div class="wechat-mock w-[375px] min-h-[600px] bg-white border-[12px] border-slate-900 rounded-[36px] shadow-2xl overflow-hidden flex flex-col text-slate-800 text-xs">
+                        <div class="h-6 bg-white px-5 flex justify-between items-center text-[10px] font-semibold text-slate-700">
                             <span>20:46</span>
-                            <span style="display: flex; gap: 4px;">📶 🪫</span>
+                            <span class="flex gap-1">📶 🪫</span>
                         </div>
-                        <div class="xhs-header" style="justify-content: flex-start; gap: 16px;">
-                            <span>◀</span>
-                            <span style="font-weight: 500; font-size: 15px;">微信号阅读</span>
+                        <div class="h-11 border-b border-slate-100 flex items-center gap-4 px-4 bg-white">
+                            <span class="text-sm cursor-pointer">◀</span>
+                            <span class="font-medium text-slate-800 text-sm">公众号阅读</span>
                         </div>
-                        <div class="wechat-body">
-                            <div class="wechat-title">${titleVal}</div>
-                            <div class="wechat-meta">
+                        <div class="p-5 overflow-y-auto flex-grow">
+                            <div class="text-lg font-bold leading-snug text-slate-900 mb-3">${titleVal}</div>
+                            <div class="flex gap-2 text-slate-400 mb-4 text-[10px]">
                                 <span>2026-05-29</span>
-                                <span class="wechat-meta-author">PulseDistro官微</span>
-                                <span style="color:#576b95">极客学术</span>
+                                <span class="text-blue-500 font-semibold cursor-pointer">PulseDistro官微</span>
+                                <span class="text-slate-300">极客学术</span>
                             </div>
-                            <div style="background-color: #f7f7f7; padding: 12px; font-size: 13px; color: #666; border-radius: 4px; margin-bottom: 20px;">
+                            <div class="bg-slate-50 border border-slate-200/50 p-3.5 text-[11px] text-slate-500 rounded-lg mb-5 leading-relaxed">
                                 <strong>摘要：</strong>${summaryVal}
                             </div>
-                            <div class="wechat-content">
+                            <div class="leading-relaxed text-slate-700">
                                 ${contentVal}
-                                <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=80" alt="Cover inline">
+                                <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=80" alt="Cover inline" class="max-w-full rounded border border-slate-100 my-3">
                             </div>
                         </div>
                     </div>
@@ -2047,35 +939,38 @@
                 const contentVal = document.getElementById('bili-body').value;
 
                 bodyElem.innerHTML = `
-                    <div class="bilibili-mock">
-                        <div class="bili-category">
-                            <span>🏠 首页</span> / <span>专栏区</span> / <span>科技数码</span>
+                    <div class="bilibili-mock w-full max-w-[680px] bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex flex-col gap-4 text-slate-800 text-sm">
+                        <div class="text-slate-400 text-xs flex gap-1 items-center">
+                            <span>🏠 专栏区</span> / <span>科技数码</span>
                         </div>
-                        <div class="bili-title">${titleVal}</div>
-                        <div class="bili-meta">
+                        <div class="text-lg font-bold text-slate-900 leading-snug">${titleVal}</div>
+                        <div class="flex gap-4 text-[10px] text-slate-400 border-b border-slate-100 pb-3">
                             <span>作者: 科技Up主小助手</span>
                             <span>时间: 2026-05-29 20:46</span>
                             <span>阅读: 12.8k</span>
                             <span>评论: 452</span>
                         </div>
-                        <div class="bili-content">
+                        <div class="leading-relaxed text-slate-800 text-[13.5px]">
                             ${contentVal.replace(/\n/g, '<br>')}
                         </div>
-                        <div class="bili-footer">
-                            <div class="bili-icon-action">👍 <span>点赞 (2.4k)</span></div>
-                            <div class="bili-icon-action">🪙 <span>投币 (1.8k)</span></div>
-                            <div class="bili-icon-action">⭐ <span>收藏 (1.2k)</span></div>
-                            <div class="bili-icon-action">🔗 <span>分享 (320)</span></div>
+                        <div class="flex gap-6 pt-4 border-t border-slate-100 text-slate-400 text-xs mt-3">
+                            <div class="flex items-center gap-1 cursor-pointer hover:text-blue-400">👍 <span>(2.4k)</span></div>
+                            <div class="flex items-center gap-1 cursor-pointer hover:text-blue-400">🪙 <span>(1.8k)</span></div>
+                            <div class="flex items-center gap-1 cursor-pointer hover:text-blue-400">⭐ <span>(1.2k)</span></div>
+                            <div class="flex items-center gap-1 cursor-pointer hover:text-blue-400">🔗 <span>(320)</span></div>
                         </div>
                     </div>
                 `;
             }
             
-            modal.classList.add('active');
+            modal.classList.add('flex');
+            modal.classList.remove('hidden');
         }
 
         function closePreviewModal(event) {
-            document.getElementById('preview-modal').classList.remove('active');
+            const modal = document.getElementById('preview-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
     </script>
 </body>
