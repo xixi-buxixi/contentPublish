@@ -1,0 +1,30 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:h2:file:${H2_DB_PATH:./data/h2/pulse-distro};MODE=PostgreSQL;AUTO_SERVER=TRUE
+    username: ${H2_DB_USERNAME:sa}
+    password: ${H2_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+pulse:
+  public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:8080}
+  ws:
+    endpoint: ${WS_ENDPOINT:/ws/pipeline}
+  media:
+    storage-root: ${MEDIA_STORAGE_ROOT:./data/media}
+  llm:
+    base-url: ${LANGCHAIN4J_BASE_URL:https://api.deepseek.com}
+    model-name: ${LANGCHAIN4J_MODEL_NAME:deepseek-v4-flash}
+    timeout-seconds: ${ADAPT_TIMEOUT_SECONDS:30}
+  adapt:
+    executor:
+      core-size: ${ADAPT_EXECUTOR_CORE_SIZE:4}
+      max-size: ${ADAPT_EXECUTOR_MAX_SIZE:8}
+      queue-capacity: ${ADAPT_EXECUTOR_QUEUE_CAPACITY:64}

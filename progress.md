@@ -2,20 +2,56 @@
 
 ## 2026-05-29
 
-- Loaded local AGENTS entry and RTK shell rule.
-- Loaded relevant workflow skills for brainstorming and file-based planning.
-- Checked initial git status.
-- Created planning files for this multi-step review.
-- Read the Java lightweight practice overview and API document headers/content enough to confirm the architecture target.
-- Confirmed PowerShell needs explicit UTF-8 output for Chinese markdown.
-- Read all module requirements, API specs, prompts, and hook scripts.
-- Identified initial consistency risks around publish mode nullability/casing, hook summary freshness, and hook output volume.
-- Re-read the full architecture overview with correct UTF-8 encoding and confirmed it does not change the Java MVP optimization target.
-- Added shared Codex agent contract and converted module prompts to Codex-specific execution protocols.
-- Improved `hooks/base_hook.py` and added unit tests for hook cycle/summary behavior.
-- Verification passed:
-  - `python -B tests\test_base_hook.py -v`
-  - `python -m py_compile hooks\base_hook.py hooks\adapt_hook.py hooks\config_hook.py hooks\media_hook.py hooks\overview_hook.py hooks\plugin_hook.py hooks\publish_hook.py hooks\task_hook.py tests\test_base_hook.py`
-  - `CODEX_HOOK_MAX_CHARS=900 python -B hooks\overview_hook.py`
-- Added root and module `agent.md` files for Codex navigation.
-- Updated hook behavior to inject only root/module `agent.md` and require both to be refreshed every 3 cycles.
+- Tried to create a new active goal, but the thread already had one; continuing under the existing goal.
+- Loaded `superpowers:using-superpowers`, `superpowers:brainstorming`, `planning-with-files`, `superpowers:writing-plans`, and `superpowers:test-driven-development` guidance.
+- Confirmed RTK rule from `C:\Users\15070\.codex\RTK.md`: shell commands must be prefixed with `rtk`.
+- Ran planning session catchup; no unsynced catchup output was reported.
+- Checked git status: `index.html` is modified before this work.
+- Read root `agent.md`, `agentsPrompt/CODEX_AGENT_CONTRACT.md`, `Pulse-Distro-Java轻量实践方案.md`, `接口文档/java接口文档.md`, and all existing module `agent.md` files with UTF-8 decoding.
+- Confirmed `rtk rg --files` and `rg --files` inside PowerShell fail with access denied; using PowerShell file enumeration instead.
+- Replaced old planning logs with the new Pulse Distro initialization/MVP build plan.
+- Read the top of `index.html` and confirmed the reference design uses Tailwind v4, Outfit/Inter, `.glass-panel`, and `.glass-header`.
+- Found existing prototype fixed-width classes such as `w-[42%]`, `w-[120px]`, and modal/mock preview widths; these are pre-existing and should be corrected only if frontend work is in scope.
+- One PowerShell `Select-String` formatting attempt failed because inline `$_` quoting was mangled; reran the search with `Select-Object LineNumber,Line`.
+- Session catchup later detected the previous design-confirmation context; followed its recommendation with `git diff --stat` and re-reading planning files.
+- Updated root `agent.md` and all module `agentsPrompt/<ModuleAgent>/agent.md` files with Orchestrator/OverviewAgent separation, API boundaries, data models, dependency boundaries, source/test paths, Hook commands, frontend notes, and `.env` variables.
+- Added `.gitignore`, `.env.example`, and local ignored `.env` with non-secret defaults.
+- Added a failing Hook test proving `.env` was not loaded, then updated `hooks/base_hook.py` to load root `.env` without overriding existing environment variables.
+- Verification passed for Hook changes:
+  - `rtk python -B tests\test_base_hook.py BaseHookTests.test_run_loads_workspace_dotenv_without_overriding_existing_env -v`
+  - `rtk python -B tests\test_base_hook.py -v`
+  - `rtk python -m py_compile hooks\base_hook.py hooks\adapt_hook.py hooks\config_hook.py hooks\media_hook.py hooks\overview_hook.py hooks\plugin_hook.py hooks\publish_hook.py hooks\task_hook.py tests\test_base_hook.py`
+- Ran all module Hooks successfully:
+  - `rtk python hooks\overview_hook.py`
+  - `rtk python hooks\task_hook.py`
+  - `rtk python hooks\media_hook.py`
+  - `rtk python hooks\config_hook.py`
+  - `rtk python hooks\adapt_hook.py`
+  - `rtk python hooks\publish_hook.py`
+  - `rtk python hooks\plugin_hook.py`
+- Restored generated tracked `hooks/__pycache__/base_hook.cpython-39.pyc` after Hook/test runs changed it.
+- Added the Java 21 + Spring Boot 3.3.13 Maven project skeleton with H2, JPA, Web, WebSocket, validation, and test dependencies.
+- Added Stage 1 failing integration coverage first, then implemented TaskAgent and MediaAgent:
+  - `ContentTask`, `MediaResource`, repositories, DTO/model records, `TaskService`, `MediaService`, task/media controllers, media binary route.
+  - Markdown normalization for headings, paragraphs, list items, and image media references.
+  - Local media storage with SHA-256 file names, public `/media/{mediaId}` URLs, image metadata, and delete conflict checks.
+- Added Stage 2 failing integration coverage first, then implemented ConfigAgent and AdaptAgent:
+  - `PlatformConfig`, platform JSON resources for `xiaohongshu`, `zhihu`, `wechat`, `bilibili`.
+  - Async adaptation placeholder records, `READY` completion, template fallback when LLM config is absent, record list/detail/edit/skip APIs.
+  - Media delete now also checks adapted publish-record media references.
+- Added Stage 3 failing integration coverage first, then implemented PublishAgent and OverviewAgent:
+  - `/api/session/init`, WebSocket handler/config, userToken-scoped in-memory event history.
+  - `mock` publishing from `READY` records to `SUCCESS`, mock URL generation, `/api/mock/{platform}/{recordId}` data, responsive `/mock/{platform}/{recordId}` HTML.
+  - `real` mode fails fast when the plugin is offline.
+- Added API smoke coverage for the real HTTP route flow:
+  - session init -> create task -> get task -> upload media -> stream media -> list configs -> adapt -> publish mock -> read mock data.
+- Added Stage 4 optional PluginAgent coverage and implementation:
+  - plugin register, heartbeat, status, publish-status callback, userToken/session scoping, event push, and publish-record status update.
+  - `real` publish now checks PluginAgent online state; online records move to `PUBLISHING` and wait for callback.
+- Manual review found and fixed two integration risks:
+  - `WS_ENDPOINT` is now mapped through `pulse.ws.endpoint`.
+  - repeated adaptation of the same task/platform now reuses the existing record instead of creating duplicate platform records.
+- Final verification passed:
+  - `rtk mvn test` -> 9 tests, 0 failures, 0 errors, build success.
+  - `rtk python -B tests\test_base_hook.py -v` -> 4 tests OK.
+  - `rtk python -m py_compile hooks\base_hook.py hooks\adapt_hook.py hooks\config_hook.py hooks\media_hook.py hooks\overview_hook.py hooks\plugin_hook.py hooks\publish_hook.py hooks\task_hook.py tests\test_base_hook.py` -> exit code 0.

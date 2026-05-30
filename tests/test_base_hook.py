@@ -2,6 +2,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -58,6 +59,46 @@ class BaseHookTests(unittest.TestCase):
             self.assertIn("Module Agent", output)
             self.assertNotIn("Requirements Document", output)
             self.assertNotIn("API Document", output)
+
+    def test_run_loads_workspace_dotenv_without_overriding_existing_env(self):
+        module = load_base_hook()
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            agent_dir = self.make_agent(workspace)
+            (workspace / "agent.md").write_text("# Project Agent\n" + ("Root nav " * 20), encoding="utf-8")
+            (workspace / ".env").write_text(
+                "CODEX_HOOK_MAX_CHARS=20\n"
+                "CODEX_HOOK_OUTPUT=brief\n"
+                "PULSE_EXISTING_VALUE=from_file\n",
+                encoding="utf-8",
+            )
+
+            old_max_chars = os.environ.pop("CODEX_HOOK_MAX_CHARS", None)
+            old_output = os.environ.pop("CODEX_HOOK_OUTPUT", None)
+            old_existing = os.environ.get("PULSE_EXISTING_VALUE")
+            os.environ["PULSE_EXISTING_VALUE"] = "from_env"
+            try:
+                result, output = self.run_hook(module, workspace)
+                state = json.loads((agent_dir / "state.json").read_text(encoding="utf-8"))
+
+                self.assertEqual(result, 0)
+                self.assertEqual(state["cycle"], 1)
+                self.assertEqual(os.environ["PULSE_EXISTING_VALUE"], "from_env")
+                self.assertEqual(os.environ["CODEX_HOOK_MAX_CHARS"], "20")
+                self.assertIn("Truncated Project Agent Overview", output)
+            finally:
+                if old_max_chars is None:
+                    os.environ.pop("CODEX_HOOK_MAX_CHARS", None)
+                else:
+                    os.environ["CODEX_HOOK_MAX_CHARS"] = old_max_chars
+                if old_output is None:
+                    os.environ.pop("CODEX_HOOK_OUTPUT", None)
+                else:
+                    os.environ["CODEX_HOOK_OUTPUT"] = old_output
+                if old_existing is None:
+                    os.environ.pop("PULSE_EXISTING_VALUE", None)
+                else:
+                    os.environ["PULSE_EXISTING_VALUE"] = old_existing
 
     def test_third_cycle_requires_fresh_agent_docs(self):
         module = load_base_hook()

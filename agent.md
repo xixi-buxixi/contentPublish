@@ -2,7 +2,13 @@
 
 本文件是 Codex 进入项目时优先读取的总览导航。它面向项目构建和模块协作，不替代用户当前指令。
 
-## 1. 项目描述
+## 1. Orchestrator 与 OverviewAgent 的边界
+
+- **Orchestrator**：当前 Codex 的总览协调者角色。负责读取根文档、实践方案和接口文档，提取模块最小上下文，更新 `agentsPrompt/<ModuleAgent>/agent.md`，运行 Hook，并按依赖顺序推进构建。
+- **OverviewAgent**：Java 业务模块。只负责 `/api/session/init`、`/ws/pipeline`、WebSocket 会话隔离、事件包装和按 `userToken` 定向推送。
+- Orchestrator 可以维护所有模块 `agent.md`；Java `OverviewAgent` 不得吸收 Task、Media、Adapt、Publish 或 Plugin 的业务逻辑。
+
+## 2. 项目描述
 
 Pulse Distro 是一个多平台内容自动适配与分发工具。MVP 目标是在单体 Java 应用中完成：
 
@@ -12,97 +18,131 @@ Pulse Distro 是一个多平台内容自动适配与分发工具。MVP 目标是
 - 通过一键 `mock` 模拟发布生成发布记录和拟态页面。
 - 为后续 `real` 浏览器插件发布保留接口，但不让真实发布阻塞 MVP。
 
-当前仓库主要包含原型页面、需求/接口资料、Codex agent 上下文和 hook。实际 Java 源码可按本文件导航逐步生成。
-
-## 2. 构建主线
-
 推荐实现形态：
 
-- Java 21 + Spring Boot 3.3.x。
+- Java 21 + Spring Boot 3.3.x 单体应用。
 - H2 文件数据库。
 - 本地媒体存储：`data/media/{taskId}/`。
-- Vue 3 或静态前端打包进 Spring Boot `static`。
+- 静态前端打包进 Spring Boot `static`。
 - WebSocket 用于适配、发布、插件状态的增量推送。
-- LangChain4j 用于智能改写；缺少模型配置时必须降级到模板适配。
+- LangChain4j 用于智能改写；缺少模型配置或超时时必须降级到模板适配。
 
-MVP 优先顺序：
+## 3. 全局配置与隐私变量
 
-1. 内容任务与标准内容模型。
-2. 媒体上传、访问和引用校验。
-3. 平台配置加载。
-4. 异步内容适配和模板降级。
-5. 一键 Mock 发布和拟态页。
-6. 会话隔离与 WebSocket 推送。
-7. 插件在线态和真实发布扩展。
+- 根目录真实 `.env` 存放本地私密配置，必须加入 `.gitignore`。
+- `.env.example` 是可提交模板，不包含真实密钥。
+- Spring Boot 配置通过 `${VAR_NAME}` 引用变量，并使用 `spring.config.import=optional:file:.env[.properties]` 读取根目录 `.env`。
+- Python Hook 通过 `hooks/base_hook.py` 读取根目录 `.env`，用于 Hook 输出控制和未来脚本配置。
+- 建议变量：
+  - `SERVER_PORT`
+  - `WS_ENDPOINT`
+  - `H2_DB_PATH`
+  - `H2_DB_USERNAME`
+  - `H2_DB_PASSWORD`
+  - `MEDIA_STORAGE_ROOT`
+  - `APP_PUBLIC_BASE_URL`
+  - `LANGCHAIN4J_API_KEY`
+  - `LANGCHAIN4J_BASE_URL`
 
-## 3. 模块导航
+## 4. 模块导航
 
-| 模块 | 入口 | 主要职责 | 依赖关系 |
+| 模块 | 入口 | 主要职责 | Hook |
 | --- | --- | --- | --- |
-| OverviewAgent | `agentsPrompt/OverviewAgent/agent.md` | 会话初始化、WebSocket、全局事件路由 | 依赖各业务模块产生事件 |
-| TaskAgent | `agentsPrompt/TaskAgent/agent.md` | 内容任务、标准内容模型、Markdown 解析 | 被 Adapt/Media/Publish 使用 |
-| MediaAgent | `agentsPrompt/MediaAgent/agent.md` | 媒体上传、本地存储、二进制访问、引用删除 | 被 Task/Adapt/Publish 引用 |
-| ConfigAgent | `agentsPrompt/ConfigAgent/agent.md` | 平台规则配置、配置加载、规则查询 | 被 Adapt/Publish/前端使用 |
-| AdaptAgent | `agentsPrompt/AdaptAgent/agent.md` | 异步平台适配、LLM/模板降级、适配记录 | 依赖 Task/Media/Config，通知 Overview |
-| PublishAgent | `agentsPrompt/PublishAgent/agent.md` | 一键发布、MockPublisher、拟态页面 | 依赖 Adapt/Config/Media，通知 Overview |
-| PluginAgent | `agentsPrompt/PluginAgent/agent.md` | 浏览器插件注册、心跳、真实发布回调 | 依赖 Overview 会话，服务 Publish real 模式 |
+| TaskAgent | `agentsPrompt/TaskAgent/agent.md` | 内容任务、标准内容模型、Markdown 解析 | `rtk python hooks/task_hook.py` |
+| MediaAgent | `agentsPrompt/MediaAgent/agent.md` | 媒体上传、本地存储、二进制访问、引用删除 | `rtk python hooks/media_hook.py` |
+| ConfigAgent | `agentsPrompt/ConfigAgent/agent.md` | 平台规则配置、配置加载、规则查询 | `rtk python hooks/config_hook.py` |
+| AdaptAgent | `agentsPrompt/AdaptAgent/agent.md` | 异步平台适配、LLM/模板降级、适配记录 | `rtk python hooks/adapt_hook.py` |
+| PublishAgent | `agentsPrompt/PublishAgent/agent.md` | 一键发布、MockPublisher、拟态页面 | `rtk python hooks/publish_hook.py` |
+| OverviewAgent | `agentsPrompt/OverviewAgent/agent.md` | 会话初始化、WebSocket、全局事件路由 | `rtk python hooks/overview_hook.py` |
+| PluginAgent | `agentsPrompt/PluginAgent/agent.md` | 插件注册、心跳、真实发布回调 | `rtk python hooks/plugin_hook.py` |
 
-## 4. 总览 Agent 的注入职责
+## 5. 推荐源码结构
 
-总览 agent 不要求子 agent 直接读取需求文档、接口文档、prompt 或 hook。总览 agent 负责：
+```text
+src/main/java/com/example/pulsedistro
+  PulseDistroApplication.java
+  config/
+  controller/
+  domain/
+  dto/
+  model/
+  repository/
+  service/
+  adapter/
+  publisher/
+  websocket/
+  event/
+src/main/resources
+  application.yml
+  platforms/
+  static/
+src/test/java/com/example/pulsedistro
+```
 
-1. 根据任务范围选择对应模块。
-2. 从总览资料中提取必要的接口、状态、数据模型和约束。
-3. 把提取后的最小上下文写入或同步到对应模块 `agent.md`。
-4. 触发对应模块 agent 时，让其读取本文件和自己的模块 `agent.md` 即可。
+## 6. 核心数据模型
 
-跨模块信息必须通过模块 `agent.md` 中的“关联模块”和“接口边界”呈现，避免子 agent 为了找上下文反复读取大文档。
+- `ContentTask`：任务标题、输入类型、原始内容、标准内容 JSON、封面媒体、状态、时间戳。
+- `MediaResource`：任务归属、原始文件名、MIME、大小、尺寸、本地存储键、公共 URL、SHA-256、状态。
+- `PlatformPublishRecord`：任务、平台、适配标题/正文、标签 JSON、媒体 JSON、可空发布模式、状态、发布 URL、错误、时间戳。
+- `PlatformConfig`：平台、展示名、完整 JSON 规则、启用状态。
+- `PluginSession`：可选真实发布插件会话，按 `userToken + sessionId` 识别。
+- 标准内容记录：`MediaRef`、`ContentBlock`、`NormalizedContent`、`AdaptedContent`。
 
-## 5. Agent 不需要读取的文件
+## 7. API 与枚举约定
 
-普通模块 agent 默认不需要读取以下文件，除非用户明确要求做文档维护或总览 agent 正在提取上下文：
+- API 基础前缀：`/api`。
+- 媒体和页面：`/media/{mediaId}`、`/mock/{platform}/{recordId}`。
+- 平台标识小写：`xiaohongshu`、`zhihu`、`wechat`、`bilibili`。
+- 发布模式小写：`mock`、`real`。
+- 状态值大写：`PENDING`、`ADAPTING`、`READY`、`PUBLISHING`、`SUCCESS`、`VERIFIED_SUCCESS`、`WARN`、`SUSPENDED`、`FAILED`、`SKIPPED`、`ONLINE`、`OFFLINE`。
+- Java enum 可内部大写，但 Controller/DTO 边界必须转换。
+- `platform_publish_record.publish_mode` 在适配占位阶段允许为空；发布阶段再写入 `mock` 或 `real`。
+- `/api` 接口使用统一 JSON envelope：`code`、`message`、`data`。可预期业务错误仍返回 HTTP 200，用 JSON `code` 区分。
+- WebSocket 推送必须按 `userToken` 定向发送，前端仍需按 `taskId` 二次过滤。
 
-- `Pulse-Distro-完整架构方案.md`
-- `Pulse-Distro-Java轻量实践方案.md`
-- `接口文档/`
-- `agentsPrompt/**/requirements.md`
-- `agentsPrompt/**/api_spec.md`
-- `agentsPrompt/**/prompt.md`
-- `agentsPrompt/CODEX_AGENT_CONTRACT.md`
-- `hooks/`
-- `tests/`
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+## 8. 前端契约
 
-这些文件是总览 agent、hook 测试或人工维护资料。业务实现 agent 应主要读取：
+- 参考根目录 `index.html` 的 Tailwind v4、Outfit、Inter、`.glass-panel`、`.glass-header` 风格。
+- 新增或修改前端时禁止固定像素宽度和硬编码比例宽度，使用响应式 Flex/Grid。
+- 异步适配时 Tab 徽标、按钮和预览区应有 loading/skeleton/empty state。
+- WebSocket 断线重连或初始化时，前端必须通过 HTTP 查询任务和记录状态兜底恢复。
+- 预览 Tab 的人工编辑必须通过 `PUT /api/records/{recordId}` 回写后再发布。
+- `real` 模式下插件离线时动态禁用发布按钮并提示原因。
+
+## 9. Hook 与 Agent.md 更新节奏
+
+每个模块任务开始前运行该模块 Hook。Hook 会读取根 `agent.md` 与模块 `agent.md`，并记录 3 轮 cycle。
+
+当 Hook 提示达到 3 轮限制时，必须先更新：
+
+- 根目录 `agent.md`
+- 当前模块 `agentsPrompt/<ModuleAgent>/agent.md`
+
+更新内容包括新增源码路径、测试路径、接口边界、跨模块依赖、配置变量和未解决风险。
+
+## 10. 模块默认读取范围
+
+普通模块 agent 默认读取：
 
 - 根目录 `agent.md`
 - 当前模块 `agentsPrompt/<ModuleAgent>/agent.md`
 - 实际源码和测试文件
 
-## 6. 全局约定
+普通模块 agent 默认不读取需求大文档、接口大文档、历史 prompt、Hook 源码或规划日志。需要额外上下文时，由 Orchestrator 提取并同步到模块 `agent.md`。
 
-- API 边界中的平台标识使用小写：`xiaohongshu`、`zhihu`、`wechat`、`bilibili`。
-- API 边界中的发布模式使用小写：`mock`、`real`。
-- 状态使用大写：`PENDING`、`ADAPTING`、`READY`、`PUBLISHING`、`SUCCESS`、`VERIFIED_SUCCESS`、`WARN`、`SUSPENDED`、`FAILED`、`SKIPPED`。
-- Java enum 可内部大写，但 DTO/Controller 边界必须转换。
-- `platform_publish_record.publish_mode` 在适配占位阶段允许为空；发布阶段再写入 `mock` 或 `real`。
-- WebSocket 推送必须按 `userToken` 定向发送，前端仍需按 `taskId` 二次过滤。
-- 代码出错时直接修复根因并验证，不要只做装饰性补丁或绕开问题。
+## 11. 2026-05-30 Review Fix Sync
 
-## 7. Agent.md 更新节奏
+- TaskAgent now owns flexmark-based Markdown normalization, including headings, paragraphs, `-` and `*` unordered lists, ordered lists, and Markdown image nodes.
+- AdaptAgent must route async completion and degradation events through OverviewAgent using `userToken`, and must restore the parent task out of `ADAPTING` after all platform futures complete.
+- PublishAgent must validate adapted media references against stored `MediaResource` rows and physical files before mock publishing.
+- OverviewAgent must reject WebSocket handshakes without `userToken`, keep event replay bounded, and clean stale empty session keys.
+- PluginAgent heartbeat can revive the same recently expired session inside the configured grace window; older sessions must register again.
+- Global LLM validation uses DeepSeek through LangChain4j OpenAI-compatible `ChatModel`; local `.env` stores the real key, `.env.example` keeps placeholders only.
+- Shared JSON parsing now goes through `JsonContentMapper` helpers to reduce repeated manual `ObjectMapper` boilerplate in service code.
 
-每个 agent hook 按模块记录轮次。每 3 轮后必须更新：
+## 12. 2026-05-30 Round 2 Fix Sync
 
-- 根目录 `agent.md`
-- 当前模块 `agentsPrompt/<ModuleAgent>/agent.md`
-
-更新内容包括：
-
-- 新增或变化的模块职责。
-- 新增源码路径和测试路径。
-- 新增跨模块依赖或接口边界。
-- 已发现但尚未解决的风险。
-
-旧的 `agent.md` 不能无限复用。hook 会检查文件修改时间，确认这些文档在上一轮记录之后被刷新。
+- TaskAgent must preserve Markdown list metadata with `ContentBlock.ordered` and `ContentBlock.depth`, and split inline images out of paragraph text.
+- TaskAgent now exposes task deletion as part of CRUD; deleting a task must also remove publish records, media rows, and the local `MEDIA_STORAGE_ROOT/{taskId}` directory.
+- AdaptAgent must run LLM/template adaptation on a dedicated `adaptTaskExecutor` instead of `ForkJoinPool.commonPool()`.
+- PublishAgent mock HTML must use the same platform wrapper classes declared by `index.html`: `xiaohongshu-mock`, `zhihu-mock`, `wechat-mock`, and `bilibili-mock`.

@@ -31,6 +31,37 @@ def _read_json(path):
     return {}
 
 
+def _parse_env_value(value):
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
+
+def _load_dotenv(workspace_dir):
+    env_path = os.path.join(workspace_dir, ".env")
+    if not os.path.exists(env_path):
+        return
+
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("export "):
+                    line = line[len("export ") :].strip()
+                if "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                if not key or key in os.environ:
+                    continue
+                os.environ[key] = _parse_env_value(value)
+    except Exception as e:
+        print(f"[Warning] Failed to load .env: {e}")
+
+
 def _write_json_atomic(path, data):
     tmp_path = f"{path}.tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
@@ -104,6 +135,7 @@ def run_hook(agent_name):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     workspace_dir = os.path.dirname(script_dir)
+    _load_dotenv(workspace_dir)
     agent_dir = os.path.join(workspace_dir, "agentsPrompt", agent_name)
     state_path = os.path.join(agent_dir, "state.json")
     agent_doc_paths = _agent_doc_paths(workspace_dir, agent_dir)
