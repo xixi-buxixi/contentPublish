@@ -5,6 +5,7 @@ import com.example.pulsedistro.dto.task.CreateTaskRequest;
 import com.example.pulsedistro.dto.task.TaskSummaryResponse;
 import com.example.pulsedistro.model.NormalizedContent;
 import com.example.pulsedistro.service.TaskService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,5 +45,11 @@ public class TaskController {
             @RequestBody NormalizedContent normalizedContent
     ) {
         return ApiResponse.success(taskService.updateNormalizedContent(taskId, normalizedContent));
+    }
+
+    @DeleteMapping("/{taskId}")
+    public ApiResponse<Void> deleteTask(@PathVariable String taskId) {
+        taskService.deleteTask(taskId);
+        return ApiResponse.success(null);
     }
 }

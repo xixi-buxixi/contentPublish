@@ -29,6 +29,7 @@ rtk python hooks/task_hook.py
 - `GET /api/tasks/{taskId}`
 - `GET /api/tasks/{taskId}/normalized`
 - `PUT /api/tasks/{taskId}/normalized`
+- `DELETE /api/tasks/{taskId}`
 
 统一响应使用 `code`、`message`、`data`。任务状态使用大写，例如 `PENDING`、`ADAPTING`、`READY`。
 
@@ -53,6 +54,8 @@ rtk python hooks/task_hook.py
   - `level`
   - `text`
   - `media`
+  - `ordered`: list block only, `true` for ordered list and `false` for unordered list
+  - `depth`: list block only, 0-based nesting depth
 - `MediaRef`
   - `mediaId`
   - `publicUrl`
@@ -88,3 +91,15 @@ rtk python hooks/task_hook.py
 - List parsing must preserve both unordered (`-` and `*`) and ordered Markdown list items in normalized list blocks.
 - Markdown image nodes must become `image` blocks. If the URL is not an uploaded media ID, preserve it as external URL metadata for preview, but publish must later require upload/normalization.
 - Add focused tests before parser behavior changes.
+
+## 2026-05-30 Round 2 Fix Sync
+
+- `DELETE /api/tasks/{taskId}` removes publish records, media rows, the task row, and `${MEDIA_STORAGE_ROOT}/{taskId}` after path normalization verifies the target stays under the media root.
+- Markdown list extraction emits one `list` block per item and preserves `ordered` plus `depth`; nested list text must not be appended to the parent item.
+- Paragraph inline images are split in document order into `paragraph` / `image` / `paragraph` blocks, so image alt text does not pollute paragraph text.
+
+## 2026-05-30 Review Fix Plan Sync
+
+- Markdown inline extraction must preserve common inline Markdown marks (`**bold**`, `*italic*`, inline code, strike) for downstream platforms that support Markdown.
+- List item extraction must emit image blocks for inline images inside list items while keeping `ordered` and `depth` metadata on list text blocks.
+- `deleteTask` must not let post-delete filesystem cleanup failures roll back committed database deletion; schedule media directory removal after transaction commit and log failures.

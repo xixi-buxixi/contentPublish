@@ -220,7 +220,48 @@ class PublishOverviewStageThreeIntegrationTest {
         assertThat(zhihuHtml).contains("zhihu-mock").doesNotContain("zhihu-answer");
         assertThat(wechatHtml).contains("wechat-mock").doesNotContain("wechat-article");
         assertThat(bilibiliHtml).contains("bilibili-mock").doesNotContain("bilibili-dynamic");
+        assertThat(List.of(xhsHtml, zhihuHtml, wechatHtml, bilibiliHtml))
+                .allSatisfy(html -> assertThat(html).doesNotContain("Follow", "Say something...", "Agree", "Column / Tech Notes"));
+        assertThat(xhsHtml).contains("关注", "说点什么");
+        assertThat(wechatHtml).contains("摘要：", "正文");
+        assertThat(bilibiliHtml).contains("分享", "320");
         assertThat(List.of(xhsHtml, zhihuHtml, wechatHtml, bilibiliHtml)).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void mockPublishRejectsMediaPublicUrlThatDoesNotMatchServedMediaEndpoint() throws Exception {
+        SessionInitResponse session = sessionService.init(new SessionInitRequest("web", "media-url-check"));
+        TaskSummaryResponse task = taskService.createTask(new CreateTaskRequest(
+                "媒体 URL 校验任务",
+                "MARKDOWN",
+                "正文"
+        ));
+        MockMultipartFile image = new MockMultipartFile(
+                "file",
+                "cover.png",
+                "image/png",
+                tinyPng()
+        );
+        String mediaId = mediaService.store(task.taskId(), image, "封面").mediaId();
+
+        PlatformPublishRecord record = new PlatformPublishRecord(task.taskId(), "xiaohongshu");
+        record.markReady(
+                "标题",
+                "正文",
+                "[]",
+                objectMapper.writeValueAsString(List.of(new MediaRef(mediaId, "https://bad.example/media/" + mediaId, "封面", 1, 1))),
+                "ready"
+        );
+        recordRepository.save(record);
+
+        assertThatThrownBy(() -> publishService.publish(task.taskId(), new PublishRequest(
+                "mock",
+                List.of("xiaohongshu"),
+                "web-session-001"
+        ), session.userToken(), session.traceId()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(400);
     }
 
     @Test

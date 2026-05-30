@@ -11,4 +11,6 @@ public interface MediaResourceRepository extends JpaRepository<MediaResource, St
     List<MediaResource> findByTaskIdOrderByCreatedAtAsc(String taskId);
 
     Optional<MediaResource> findByIdAndTaskId(String id, String taskId);
+
+    void deleteByTaskId(String taskId);
 }

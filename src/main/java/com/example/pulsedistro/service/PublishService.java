@@ -174,6 +174,14 @@ public class PublishService {
             if (!Files.isRegularFile(target)) {
                 throw new BusinessException(400, "media file is not accessible");
             }
+            validatePublicUrl(mediaRef, media);
+        }
+    }
+
+    private void validatePublicUrl(MediaRef mediaRef, MediaResource media) {
+        String expectedUrl = normalizedBaseUrl() + "/media/" + media.getId();
+        if (!expectedUrl.equals(mediaRef.publicUrl())) {
+            throw new BusinessException(400, "media publicUrl is not accessible");
         }
     }
 

@@ -152,7 +152,16 @@ public class AdaptService {
             recordRepository.findById(recordId).ifPresent(record -> {
                 record.markFailed(StringUtils.hasText(e.getMessage()) ? e.getMessage() : e.getClass().getSimpleName());
                 PlatformPublishRecord saved = recordRepository.save(record);
-                publishPlatformEvent(userToken, "TASK_FAILED", saved, traceId);
+                publishTaskFailedEvent(
+                        userToken,
+                        traceId,
+                        "platform",
+                        saved.getTaskId(),
+                        saved.getId(),
+                        saved.getPlatform(),
+                        saved.getStatus(),
+                        saved.getErrorMessage()
+                );
             });
         }
     }
@@ -169,9 +178,16 @@ public class AdaptService {
         ContentTask saved = taskRepository.save(task);
 
         if (allFailed) {
-            Map<String, Object> data = baseData(userToken, saved.getId(), traceId);
-            data.put("status", saved.getStatus());
-            eventPublisher.publish(userToken, "TASK_FAILED", data);
+            publishTaskFailedEvent(
+                    userToken,
+                    traceId,
+                    "task",
+                    saved.getId(),
+                    "",
+                    "",
+                    saved.getStatus(),
+                    "all platform adaptations failed"
+            );
         }
     }
 
@@ -187,6 +203,25 @@ public class AdaptService {
         data.put("status", record.getStatus());
         data.put("errorMessage", record.getErrorMessage() == null ? "" : record.getErrorMessage());
         eventPublisher.publish(userToken, eventName, data);
+    }
+
+    private void publishTaskFailedEvent(
+            String userToken,
+            String traceId,
+            String scope,
+            String taskId,
+            String recordId,
+            String platform,
+            String status,
+            String errorMessage
+    ) {
+        Map<String, Object> data = baseData(userToken, taskId, traceId);
+        data.put("scope", scope);
+        data.put("recordId", recordId == null ? "" : recordId);
+        data.put("platform", platform == null ? "" : platform);
+        data.put("status", status == null ? "" : status);
+        data.put("errorMessage", errorMessage == null ? "" : errorMessage);
+        eventPublisher.publish(userToken, "TASK_FAILED", data);
     }
 
     private Map<String, Object> baseData(String userToken, String taskId, String traceId) {

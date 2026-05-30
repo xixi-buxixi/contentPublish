@@ -146,3 +146,12 @@ src/test/java/com/example/pulsedistro
 - TaskAgent now exposes task deletion as part of CRUD; deleting a task must also remove publish records, media rows, and the local `MEDIA_STORAGE_ROOT/{taskId}` directory.
 - AdaptAgent must run LLM/template adaptation on a dedicated `adaptTaskExecutor` instead of `ForkJoinPool.commonPool()`.
 - PublishAgent mock HTML must use the same platform wrapper classes declared by `index.html`: `xiaohongshu-mock`, `zhihu-mock`, `wechat-mock`, and `bilibili-mock`.
+
+## 13. 2026-05-30 Review Fix Plan Sync
+
+- OverviewAgent event replay must expire old recent events by age before removing empty `userToken` queues; `PIPELINE_EVENT_RETENTION_MS` controls the retention window.
+- TaskAgent Markdown parsing must preserve common inline Markdown marks and emit image blocks from list items without mixing image alt text into list text.
+- TaskAgent task deletion keeps database removal transactional and performs media directory cleanup after commit so file I/O failures do not roll back deleted rows.
+- PublishAgent validates adapted media `publicUrl` against `${APP_PUBLIC_BASE_URL}/media/{mediaId}` in addition to checking the local file.
+- PublishAgent mock HTML should stay visually aligned with `index.html`, including Chinese UI labels, WeChat summary cards, and Bilibili share counters.
+- AdaptAgent keeps `TASK_FAILED` as the event name but uses one stable payload shape for platform-level and task-level failures.

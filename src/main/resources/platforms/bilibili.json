@@ -1,0 +1,13 @@
+{
+  "platform": "bilibili",
+  "displayName": "B站",
+  "maxTitleLength": 80,
+  "maxContentLength": 2000,
+  "maxTags": 10,
+  "supportsMarkdown": false,
+  "image": {
+    "maxCount": 9,
+    "acceptedMimeTypes": ["image/jpeg", "image/png", "image/webp"]
+  },
+  "stylePrompt": "改写为适合动态或专栏的活泼知识分享风格。"
+}

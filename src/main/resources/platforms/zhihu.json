@@ -1,0 +1,13 @@
+{
+  "platform": "zhihu",
+  "displayName": "知乎",
+  "maxTitleLength": 80,
+  "maxContentLength": 5000,
+  "maxTags": 5,
+  "supportsMarkdown": true,
+  "image": {
+    "maxCount": 20,
+    "acceptedMimeTypes": ["image/jpeg", "image/png", "image/webp"]
+  },
+  "stylePrompt": "改写为专业、理性、结构化的问答或专栏风格。"
+}

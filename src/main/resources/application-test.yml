@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:pulse-distro-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+pulse:
+  media:
+    storage-root: ./target/test-media
+  public-base-url: http://localhost:8080

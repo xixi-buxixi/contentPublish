@@ -10,41 +10,69 @@ import com.example.pulsedistro.model.MediaRef;
 import com.example.pulsedistro.model.NormalizedContent;
 import com.example.pulsedistro.repository.ContentTaskRepository;
 import com.example.pulsedistro.repository.MediaResourceRepository;
+import com.example.pulsedistro.repository.PlatformPublishRecordRepository;
 import com.vladsch.flexmark.ast.BulletList;
+import com.vladsch.flexmark.ast.Code;
+import com.vladsch.flexmark.ast.Emphasis;
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Image;
 import com.vladsch.flexmark.ast.ListItem;
 import com.vladsch.flexmark.ast.OrderedList;
 import com.vladsch.flexmark.ast.Paragraph;
+import com.vladsch.flexmark.ast.SoftLineBreak;
+import com.vladsch.flexmark.ast.StrongEmphasis;
+import com.vladsch.flexmark.ast.Text;
+import com.vladsch.flexmark.ext.gfm.strikethrough.Strikethrough;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.ast.TextCollectingVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 @Service
 public class TaskService {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+
     private final ContentTaskRepository taskRepository;
     private final MediaResourceRepository mediaRepository;
+    private final PlatformPublishRecordRepository recordRepository;
     private final JsonContentMapper jsonMapper;
     private final Parser markdownParser;
     private final TextCollectingVisitor textCollector = new TextCollectingVisitor();
+    private final Path storageRoot;
 
     public TaskService(
             ContentTaskRepository taskRepository,
             MediaResourceRepository mediaRepository,
-            JsonContentMapper jsonMapper
+            PlatformPublishRecordRepository recordRepository,
+            JsonContentMapper jsonMapper,
+            @Value("${pulse.media.storage-root:data/media}") String storageRoot
     ) {
         this.taskRepository = taskRepository;
         this.mediaRepository = mediaRepository;
+        this.recordRepository = recordRepository;
         this.jsonMapper = jsonMapper;
-        this.markdownParser = Parser.builder().build();
+        this.storageRoot = Path.of(storageRoot).toAbsolutePath().normalize();
+        this.markdownParser = Parser.builder()
+                .extensions(List.of(StrikethroughExtension.create()))
+                .build();
     }
 
     @Transactional
@@ -78,6 +106,25 @@ public class TaskService {
         return enriched;
     }
 
+    @Transactional
+    public void deleteTask(String taskId) {
+        ContentTask task = getTask(taskId);
+        recordRepository.deleteByTaskId(taskId);
+        mediaRepository.deleteByTaskId(taskId);
+        taskRepository.delete(task);
+        Path taskMediaDirectory = taskMediaDirectory(taskId);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    deleteDirectoryQuietly(taskMediaDirectory);
+                } catch (RuntimeException e) {
+                    log.warn("failed to delete task media directory after database commit: {}", taskMediaDirectory, e);
+                }
+            }
+        });
+    }
+
     private ContentTask getTask(String taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new BusinessException(404, "task not found"));
@@ -87,7 +134,7 @@ public class TaskService {
         List<ContentBlock> blocks = new ArrayList<>();
         Node document = markdownParser.parse(rawContent == null ? "" : rawContent);
         for (Node node = document.getFirstChild(); node != null; node = node.getNext()) {
-            appendBlock(blocks, node);
+            appendBlock(blocks, node, 0);
         }
 
         String summary = blocks.stream()
@@ -100,7 +147,7 @@ public class TaskService {
         return new NormalizedContent(title, summary, List.copyOf(blocks));
     }
 
-    private void appendBlock(List<ContentBlock> blocks, Node node) {
+    private void appendBlock(List<ContentBlock> blocks, Node node, int depth) {
         if (node instanceof Heading heading) {
             String text = collectText(heading);
             if (StringUtils.hasText(text)) {
@@ -110,7 +157,7 @@ public class TaskService {
         }
 
         if (node instanceof BulletList || node instanceof OrderedList) {
-            appendListItems(blocks, node);
+            appendListItems(blocks, node, node instanceof OrderedList, depth);
             return;
         }
 
@@ -120,59 +167,209 @@ public class TaskService {
         }
 
         for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-            appendBlock(blocks, child);
+            appendBlock(blocks, child, depth);
         }
     }
 
-    private void appendListItems(List<ContentBlock> blocks, Node listNode) {
+    private void appendListItems(List<ContentBlock> blocks, Node listNode, boolean ordered, int depth) {
         for (Node child = listNode.getFirstChild(); child != null; child = child.getNext()) {
             if (child instanceof ListItem) {
-                String text = collectText(child);
-                if (StringUtils.hasText(text)) {
-                    blocks.add(new ContentBlock("list", null, text, null));
+                ListItemParts parts = collectListItemLead(child);
+                if (StringUtils.hasText(parts.text())) {
+                    blocks.add(new ContentBlock("list", null, parts.text(), null, ordered, depth));
+                }
+                parts.images().forEach(image -> blocks.add(new ContentBlock("image", null, null, image)));
+                boolean leadConsumed = false;
+                for (Node itemChild = child.getFirstChild(); itemChild != null; itemChild = itemChild.getNext()) {
+                    if (itemChild instanceof BulletList || itemChild instanceof OrderedList) {
+                        appendListItems(blocks, itemChild, itemChild instanceof OrderedList, depth + 1);
+                    } else if (!leadConsumed) {
+                        appendContinuationAfterFirstLine(blocks, itemChild);
+                        leadConsumed = true;
+                    } else {
+                        appendBlock(blocks, itemChild, depth);
+                    }
                 }
             }
         }
     }
 
     private void appendParagraph(List<ContentBlock> blocks, Paragraph paragraph) {
-        List<Image> images = imagesIn(paragraph);
-        if (!images.isEmpty()) {
-            String paragraphText = collectText(paragraph);
-            for (Image image : images) {
-                blocks.add(new ContentBlock("image", null, null, mediaRef(image)));
+        StringBuilder text = new StringBuilder();
+        for (Node child = paragraph.getFirstChild(); child != null; child = child.getNext()) {
+            appendParagraphInline(blocks, child, text);
+        }
+        flushParagraph(blocks, text);
+    }
+
+    private void flushParagraph(List<ContentBlock> blocks, StringBuilder text) {
+        String value = text.toString().trim();
+        if (StringUtils.hasText(value)) {
+            blocks.add(new ContentBlock("paragraph", null, value, null));
+        }
+        text.setLength(0);
+    }
+
+    private ListItemParts collectListItemLead(Node listItem) {
+        StringBuilder text = new StringBuilder();
+        List<MediaRef> images = new ArrayList<>();
+        boolean[] stopped = {false};
+        for (Node child = listItem.getFirstChild(); child != null; child = child.getNext()) {
+            if (child instanceof BulletList || child instanceof OrderedList) {
+                continue;
             }
-            boolean paragraphOnlyDescribesImage = images.stream()
-                    .map(image -> image.getText().toString())
-                    .anyMatch(alt -> alt.equals(paragraphText));
-            if (paragraphOnlyDescribesImage) {
-                return;
-            }
-            if (StringUtils.hasText(paragraphText)) {
-                blocks.add(new ContentBlock("paragraph", null, paragraphText, null));
-            }
+            appendListInline(child, text, images, stopped);
+            break;
+        }
+        return new ListItemParts(text.toString().trim(), List.copyOf(images));
+    }
+
+    private void appendParagraphInline(List<ContentBlock> blocks, Node node, StringBuilder text) {
+        if (node instanceof Image image) {
+            flushParagraph(blocks, text);
+            blocks.add(new ContentBlock("image", null, null, mediaRef(image)));
             return;
         }
+        appendMarkdownText(node, text, (mediaRef) -> {
+            flushParagraph(blocks, text);
+            blocks.add(new ContentBlock("image", null, null, mediaRef));
+        });
+    }
 
-        String text = collectText(paragraph);
-        if (StringUtils.hasText(text)) {
-            blocks.add(new ContentBlock("paragraph", null, text, null));
+    private void appendListInline(Node node, StringBuilder text, List<MediaRef> images, boolean[] stopped) {
+        appendMarkdownTextUntilLineBreak(node, text, images, stopped);
+    }
+
+    private void appendContinuationAfterFirstLine(List<ContentBlock> blocks, Node node) {
+        StringBuilder text = new StringBuilder();
+        boolean[] afterFirstLine = {false};
+        appendAfterFirstLine(blocks, node, text, afterFirstLine);
+        flushParagraph(blocks, text);
+    }
+
+    private String markdownText(Node node) {
+        StringBuilder text = new StringBuilder();
+        appendMarkdownText(node, text, ignored -> {
+        });
+        return text.toString();
+    }
+
+    private void appendMarkdownText(Node node, StringBuilder text, java.util.function.Consumer<MediaRef> imageConsumer) {
+        if (node instanceof Image) {
+            imageConsumer.accept(mediaRef((Image) node));
+            return;
         }
-    }
-
-    private List<Image> imagesIn(Node node) {
-        List<Image> images = new ArrayList<>();
-        collectImages(node, images);
-        return images;
-    }
-
-    private void collectImages(Node node, List<Image> images) {
-        if (node instanceof Image image) {
-            images.add(image);
+        if (node instanceof Text textNode) {
+            text.append(textNode.getChars().toString());
+            return;
+        }
+        if (node instanceof Code code) {
+            text.append("`").append(code.getText()).append("`");
+            return;
+        }
+        if (node instanceof StrongEmphasis) {
+            appendWrappedChildren(node, text, imageConsumer, "**");
+            return;
+        }
+        if (node instanceof Emphasis) {
+            appendWrappedChildren(node, text, imageConsumer, "*");
+            return;
+        }
+        if (node instanceof Strikethrough) {
+            appendWrappedChildren(node, text, imageConsumer, "~~");
+            return;
         }
         for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
-            collectImages(child, images);
+            appendMarkdownText(child, text, imageConsumer);
         }
+    }
+
+    private void appendMarkdownTextUntilLineBreak(
+            Node node,
+            StringBuilder text,
+            List<MediaRef> images,
+            boolean[] stopped
+    ) {
+        if (stopped[0]) {
+            return;
+        }
+        if (node instanceof SoftLineBreak) {
+            stopped[0] = true;
+            return;
+        }
+        if (node instanceof Image image) {
+            images.add(mediaRef(image));
+            return;
+        }
+        if (node instanceof Text textNode) {
+            text.append(textNode.getChars().toString());
+            return;
+        }
+        if (node instanceof Code code) {
+            text.append("`").append(code.getText()).append("`");
+            return;
+        }
+        if (node instanceof StrongEmphasis) {
+            appendWrappedChildrenUntilLineBreak(node, text, images, stopped, "**");
+            return;
+        }
+        if (node instanceof Emphasis) {
+            appendWrappedChildrenUntilLineBreak(node, text, images, stopped, "*");
+            return;
+        }
+        if (node instanceof Strikethrough) {
+            appendWrappedChildrenUntilLineBreak(node, text, images, stopped, "~~");
+            return;
+        }
+        for (Node child = node.getFirstChild(); child != null && !stopped[0]; child = child.getNext()) {
+            appendMarkdownTextUntilLineBreak(child, text, images, stopped);
+        }
+    }
+
+    private void appendAfterFirstLine(
+            List<ContentBlock> blocks,
+            Node node,
+            StringBuilder text,
+            boolean[] afterFirstLine
+    ) {
+        if (node instanceof SoftLineBreak) {
+            afterFirstLine[0] = true;
+            return;
+        }
+        if (afterFirstLine[0]) {
+            appendParagraphInline(blocks, node, text);
+            return;
+        }
+        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+            appendAfterFirstLine(blocks, child, text, afterFirstLine);
+        }
+    }
+
+    private void appendWrappedChildrenUntilLineBreak(
+            Node node,
+            StringBuilder text,
+            List<MediaRef> images,
+            boolean[] stopped,
+            String marker
+    ) {
+        text.append(marker);
+        for (Node child = node.getFirstChild(); child != null && !stopped[0]; child = child.getNext()) {
+            appendMarkdownTextUntilLineBreak(child, text, images, stopped);
+        }
+        text.append(marker);
+    }
+
+    private void appendWrappedChildren(
+            Node node,
+            StringBuilder text,
+            java.util.function.Consumer<MediaRef> imageConsumer,
+            String marker
+    ) {
+        text.append(marker);
+        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+            appendMarkdownText(child, text, imageConsumer);
+        }
+        text.append(marker);
     }
 
     private MediaRef mediaRef(Image image) {
@@ -225,7 +422,32 @@ public class TaskService {
                 media.getWidth(),
                 media.getHeight()
         );
-        return new ContentBlock(block.type(), block.level(), block.text(), mediaRef);
+        return new ContentBlock(block.type(), block.level(), block.text(), mediaRef, block.ordered(), block.depth());
+    }
+
+    private Path taskMediaDirectory(String taskId) {
+        Path target = storageRoot.resolve(taskId).normalize();
+        if (!target.startsWith(storageRoot)) {
+            throw new BusinessException(400, "invalid storage path");
+        }
+        return target;
+    }
+
+    private void deleteDirectoryQuietly(Path target) {
+        if (!Files.exists(target)) {
+            return;
+        }
+        try (var paths = Files.walk(target)) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private String normalizeSourceType(String sourceType) {
@@ -251,5 +473,8 @@ public class TaskService {
                 task.getCreatedAt(),
                 task.getUpdatedAt()
         );
+    }
+
+    private record ListItemParts(String text, List<MediaRef> images) {
     }
 }

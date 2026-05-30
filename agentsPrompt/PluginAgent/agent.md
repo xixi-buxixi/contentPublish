@@ -16,30 +16,23 @@ rtk python hooks/plugin_hook.py
 
 - `src/main/java/com/example/pulsedistro/controller/PluginController.java`
 - `src/main/java/com/example/pulsedistro/service/PluginManager.java`
-- `src/main/java/com/example/pulsedistro/domain/PluginSession.java`
 - `src/main/java/com/example/pulsedistro/dto/plugin/*`
-- `src/test/java/com/example/pulsedistro/plugin/*`
+- `src/test/java/com/example/pulsedistro/stage4/*`
 
 ## API 边界
 
 - `POST /api/plugin/register`
 - `POST /api/plugin/heartbeat`
-- `GET /api/plugin/status`
-- `POST /api/plugin/publish-status`
 
-插件请求必须携带 `X-User-Token`。真实发布前，PublishAgent 通过本模块确认同一 `userToken` 下插件在线。
+插件请求体必须携带 `userToken` 和 `sessionId`。真实发布前，PublishAgent 通过本模块确认同一 `userToken` 下插件在线。
 
 ## 数据模型
 
-- `PluginSession`
-  - `id`
+- `PluginSession` 当前为 `PluginManager` 内存记录
   - `userToken`
   - `sessionId`
-  - `extensionVersion`
-  - `browser`
   - `status`
   - `lastHeartbeatAt`
-  - `createdAt`
 
 状态建议使用 `ONLINE`、`OFFLINE`、`SUSPENDED`。
 
@@ -68,5 +61,4 @@ rtk python hooks/plugin_hook.py
 
 - Heartbeat can revive the same `userToken + sessionId` if it expired less than 5 minutes ago.
 - Different session IDs, missing sessions, or sessions older than the recovery grace must register again.
-- `PluginManager` uses an injectable `Clock` for deterministic tests and scheduled cleanup removes stale in-memory plugin sessions.
-- `PLUGIN_STATUS_CHANGED` is emitted when a recently expired session revives through heartbeat.
+- `PluginManager` keeps a bounded in-memory online table and scheduled cleanup marks expired sessions offline before removing stale entries beyond the revive window.

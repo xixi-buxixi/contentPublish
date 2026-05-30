@@ -9,6 +9,7 @@ public record MockPageDataResponse(
         String recordId,
         String platform,
         String title,
+        String summary,
         String content,
         List<String> tags,
         List<MediaRef> media,

@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.transaction.TestTransaction;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -103,6 +104,39 @@ class TaskMediaStageOneIntegrationTest {
     }
 
     @Test
+    void createTaskPreservesMarkdownInlineMarksAndListItemImages() {
+        TaskSummaryResponse created = taskService.createTask(new CreateTaskRequest(
+                "Markdown fidelity",
+                "MARKDOWN",
+                "- **加粗重点** ![列表图](https://example.com/list.png)\n"
+                        + "  1. *斜体子项* ![子图](https://example.com/nested.png)\n"
+                        + "段落含 `code` 和 ~~删除线~~"
+        ));
+
+        NormalizedContent normalized = taskService.getNormalizedContent(created.taskId());
+
+        assertThat(normalized.blocks().stream()
+                .filter(block -> "list".equals(block.type()))
+                .map(ContentBlock::text))
+                .containsExactly("**加粗重点**", "*斜体子项*");
+        assertThat(normalized.blocks().stream()
+                .filter(block -> "list".equals(block.type())))
+                .extracting(ContentBlock::ordered, ContentBlock::depth)
+                .containsExactly(tuple(false, 0), tuple(true, 1));
+        assertThat(normalized.blocks().stream()
+                .filter(block -> "image".equals(block.type()))
+                .map(block -> tuple(block.media().publicUrl(), block.media().alt())))
+                .containsExactly(
+                        tuple("https://example.com/list.png", "列表图"),
+                        tuple("https://example.com/nested.png", "子图")
+                );
+        assertThat(normalized.blocks().stream()
+                .filter(block -> "paragraph".equals(block.type()))
+                .map(ContentBlock::text))
+                .contains("段落含 `code` 和 ~~删除线~~");
+    }
+
+    @Test
     void mediaUploadStoresPublicUrlAndDeleteRejectsNormalizedReferences() {
         TaskSummaryResponse created = taskService.createTask(new CreateTaskRequest(
                 "带图任务",
@@ -161,6 +195,9 @@ class TaskMediaStageOneIntegrationTest {
         mockMvc.perform(delete("/api/tasks/{taskId}", created.taskId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         assertThat(taskRepository.existsById(created.taskId())).isFalse();
         assertThat(mediaRepository.findByTaskIdOrderByCreatedAtAsc(created.taskId())).isEmpty();

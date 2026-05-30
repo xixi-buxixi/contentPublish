@@ -1,0 +1,10 @@
+{
+  "agent": "PublishAgent",
+  "cycle": 2,
+  "max_cycles": 3,
+  "agent_doc_mtimes": {
+    "project": 1780114939.6318712,
+    "module": 1780114939.6493082
+  },
+  "last_run_at": "2026-05-30T07:18:46.390385+00:00"
+}

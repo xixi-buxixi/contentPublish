@@ -1,0 +1,13 @@
+{
+  "platform": "wechat",
+  "displayName": "微信公众号",
+  "maxTitleLength": 64,
+  "maxContentLength": 10000,
+  "maxTags": 5,
+  "supportsMarkdown": true,
+  "image": {
+    "maxCount": 50,
+    "acceptedMimeTypes": ["image/jpeg", "image/png", "image/webp"]
+  },
+  "stylePrompt": "改写为公众号长文风格，保留层次和摘要。"
+}

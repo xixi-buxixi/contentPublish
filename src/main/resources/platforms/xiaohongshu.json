@@ -1,0 +1,13 @@
+{
+  "platform": "xiaohongshu",
+  "displayName": "小红书",
+  "maxTitleLength": 20,
+  "maxContentLength": 1000,
+  "maxTags": 10,
+  "supportsMarkdown": false,
+  "image": {
+    "maxCount": 9,
+    "acceptedMimeTypes": ["image/jpeg", "image/png", "image/webp"]
+  },
+  "stylePrompt": "改写为轻量、口语化、带种草感的图文笔记风格。"
+}

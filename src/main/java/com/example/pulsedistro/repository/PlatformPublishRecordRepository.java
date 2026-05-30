@@ -11,4 +11,6 @@ public interface PlatformPublishRecordRepository extends JpaRepository<PlatformP
     List<PlatformPublishRecord> findByTaskIdOrderByCreatedAtAsc(String taskId);
 
     Optional<PlatformPublishRecord> findByTaskIdAndPlatform(String taskId, String platform);
+
+    void deleteByTaskId(String taskId);
 }

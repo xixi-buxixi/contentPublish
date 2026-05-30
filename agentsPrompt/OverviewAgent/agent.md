@@ -30,7 +30,7 @@ rtk python hooks/overview_hook.py
 - `POST /api/session/init`
 - `GET /ws/pipeline?userToken={userToken}&traceId={traceId}`
 
-`/api/session/init` 返回 `userId`、`userToken`、`traceId`。WebSocket 是增量通道，HTTP 查询接口仍是断线恢复兜底。
+`/api/session/init` 返回 `userToken`、`wsEndpoint` 和当前 `userToken` 的最近事件。WebSocket 是增量通道，HTTP 查询接口仍是断线恢复兜底。
 
 ## 事件模型
 

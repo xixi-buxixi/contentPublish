@@ -2,10 +2,14 @@ package com.example.pulsedistro.controller;
 
 import com.example.pulsedistro.dto.common.ApiResponse;
 import com.example.pulsedistro.dto.publish.MockPageDataResponse;
+import com.example.pulsedistro.model.MediaRef;
 import com.example.pulsedistro.service.MockPageService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RestController
 public class MockPageController {
@@ -27,7 +31,7 @@ public class MockPageController {
     @GetMapping(value = "/mock/{platform}/{recordId}", produces = "text/html;charset=UTF-8")
     public String getMockPage(@PathVariable String platform, @PathVariable String recordId) {
         MockPageDataResponse data = mockPageService.getMockData(platform, recordId);
-        String normalizedPlatform = platform == null ? "" : platform.toLowerCase(java.util.Locale.ROOT);
+        String normalizedPlatform = platform == null ? "" : platform.toLowerCase(Locale.ROOT);
         String mockBody = switch (normalizedPlatform) {
             case "xiaohongshu" -> renderXiaohongshu(data);
             case "zhihu" -> renderZhihu(data);
@@ -69,20 +73,6 @@ public class MockPageController {
                       box-shadow: 0 1.5rem 4rem rgba(15, 23, 42, .14);
                       backdrop-filter: blur(1.125rem);
                     }
-                    .glass-header {
-                      display: flex;
-                      align-items: center;
-                      justify-content: space-between;
-                      gap: 1rem;
-                      padding-block-end: 1rem;
-                      border-block-end: .0625rem solid rgba(15, 23, 42, .08);
-                    }
-                    .platform {
-                      color: #64748b;
-                      text-transform: uppercase;
-                      font-size: .75rem;
-                      letter-spacing: .12em;
-                    }
                     .tag-list {
                       display: flex;
                       flex-wrap: wrap;
@@ -96,25 +86,12 @@ public class MockPageController {
                       font-size: .8125rem;
                       color: #475569;
                     }
-                    h1 {
-                      margin: 1rem 0 1.25rem;
-                      font-family: Outfit, Inter, system-ui, sans-serif;
-                      font-size: clamp(1.5rem, 4vw, 2.5rem);
-                      line-height: 1.12;
-                    }
                     article { white-space: pre-wrap; line-height: 1.8; }
-                    .xiaohongshu-mock {
-                      inline-size: min(100%%, 28rem);
-                      margin-inline: auto;
-                      border-radius: 1.5rem;
-                      background: linear-gradient(180deg, #fff7fb, #ffffff);
-                      box-shadow: inset 0 0 0 .0625rem rgba(244, 114, 182, .28), 0 1.5rem 4rem rgba(190, 24, 93, .16);
-                      overflow: hidden;
-                    }
-                    .xhs-feed { padding: 1rem; }
+                    .xiaohongshu-mock { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+                    .zhihu-mock { font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,sans-serif; }
+                    .wechat-mock { font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,sans-serif; }
+                    .bilibili-mock { font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,Arial,sans-serif; }
                     .xhs-cover {
-                      aspect-ratio: 4 / 5;
-                      border-radius: 1rem;
                       background: linear-gradient(135deg, #f9a8d4, #99f6e4);
                       display: grid;
                       place-items: center;
@@ -124,32 +101,6 @@ public class MockPageController {
                       text-align: center;
                       padding: 1rem;
                     }
-                    .zhihu-mock {
-                      display: grid;
-                      gap: 1.25rem;
-                      background: #fff;
-                      border-radius: .75rem;
-                      padding: clamp(1rem, 3vw, 2rem);
-                      box-shadow: 0 1rem 3rem rgba(30, 64, 175, .10);
-                    }
-                    .zhihu-meta { color: #64748b; font-size: .9rem; }
-                    .wechat-mock {
-                      inline-size: min(100%%, 42rem);
-                      margin-inline: auto;
-                      background: #fff;
-                      border-radius: 1.25rem;
-                      padding: clamp(1.25rem, 4vw, 2.25rem);
-                      box-shadow: 0 1rem 3rem rgba(22, 101, 52, .10);
-                    }
-                    .wechat-meta { color: #94a3b8; font-size: .875rem; }
-                    .bilibili-mock {
-                      background: #fff;
-                      border-radius: 1rem;
-                      padding: clamp(1rem, 3vw, 2rem);
-                      border: .0625rem solid rgba(14, 165, 233, .18);
-                      box-shadow: 0 1rem 3rem rgba(2, 132, 199, .12);
-                    }
-                    .bilibili-badge { color: #0ea5e9; font-weight: 700; }
                   </style>
                 </head>
                 <body>
@@ -163,52 +114,117 @@ public class MockPageController {
 
     private String renderXiaohongshu(MockPageDataResponse data) {
         return """
-                <section class="xiaohongshu-mock">
-                  <div class="xhs-cover">%s</div>
-                  <div class="xhs-feed">
-                    <div class="platform">Xiaohongshu</div>
-                    <h1>%s</h1>
-                    <article>%s</article>
+                <section class="xiaohongshu-mock w-full max-w-md bg-white border-[0.75rem] border-slate-900 rounded-[2.25rem] shadow-2xl overflow-hidden flex flex-col text-slate-800 text-xs mx-auto">
+                  <div class="h-6 bg-white px-5 flex justify-between items-center text-[10px] font-semibold text-slate-700">
+                    <span>20:46</span>
+                    <span class="flex gap-1">信号 电量</span>
+                  </div>
+                  <div class="h-11 border-b border-slate-100 flex items-center justify-between px-4">
+                    <span class="text-sm">‹</span>
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-400 to-amber-400"></div>
+                      <span class="font-semibold text-slate-800">极客独立创作者</span>
+                    </div>
+                    <span class="border border-rose-500 text-rose-500 text-[10px] px-2.5 py-0.5 rounded-full font-semibold">关注</span>
+                  </div>
+                  <div class="relative w-full aspect-square bg-slate-50 flex items-center justify-center">
                     %s
+                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                      <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                      <div class="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                    </div>
+                  </div>
+                  <div class="p-4 flex-grow overflow-y-auto">
+                    <div class="text-sm font-bold text-slate-900 mb-2 leading-snug">%s</div>
+                    <article class="leading-relaxed whitespace-pre-wrap text-slate-700">%s</article>
+                    %s
+                    <div class="text-[9px] text-slate-400 mt-4">编辑于 今天 20:46 · IP 属地浙江</div>
+                  </div>
+                  <div class="h-12 border-t border-slate-100 flex items-center justify-between px-4 bg-white text-slate-500">
+                    <span>说点什么...</span>
+                    <div class="flex gap-4">
+                      <div class="flex items-center gap-1">喜欢 <span class="text-[10px]">2.8k</span></div>
+                      <div class="flex items-center gap-1">收藏 <span class="text-[10px]">1.4k</span></div>
+                      <div class="flex items-center gap-1">评论 <span class="text-[10px]">582</span></div>
+                    </div>
                   </div>
                 </section>
-                """.formatted(escape(data.title()), escape(data.title()), htmlContent(data.content()), tags(data.tags(), "#"));
+                """.formatted(coverImage(data), escape(data.title()), htmlContent(data.content()), tags(data.tags(), "#"));
     }
 
     private String renderZhihu(MockPageDataResponse data) {
         return """
-                <section class="zhihu-mock">
-                  <div class="platform">Zhihu Answer</div>
-                  <h1>%s</h1>
-                  <div class="zhihu-meta">Pulse Distro · 模拟回答</div>
-                  <article>%s</article>
+                <section class="zhihu-mock w-full max-w-3xl bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex flex-col gap-4 text-slate-800 text-sm mx-auto">
+                  <div class="text-xl font-semibold leading-snug text-slate-900">%s</div>
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded bg-gradient-to-tr from-blue-500 to-indigo-500"></div>
+                    <div class="flex flex-col">
+                      <span class="font-bold text-slate-700 text-xs">知乎科技创作者</span>
+                      <span class="text-[10px] text-slate-400">全栈工程师 / 自媒体系统架构师</span>
+                    </div>
+                  </div>
+                  <article class="leading-relaxed whitespace-pre-wrap text-slate-800">%s</article>
                   %s
+                  <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div class="flex gap-2">
+                      <button class="bg-blue-50 text-blue-600 border-none px-3.5 py-1.5 rounded-sm font-medium text-xs flex items-center gap-1.5">▲ 赞同 4.2k</button>
+                      <button class="bg-blue-50 text-blue-600 border-none px-2.5 py-1.5 rounded-sm text-xs">▼</button>
+                    </div>
+                    <span class="text-xs text-slate-400">128 条评论 · 分享 · 收藏</span>
+                  </div>
                 </section>
                 """.formatted(escape(data.title()), htmlContent(data.content()), tags(data.tags(), ""));
     }
 
     private String renderWechat(MockPageDataResponse data) {
         return """
-                <section class="wechat-mock">
-                  <div class="platform">WeChat Official Account</div>
-                  <h1>%s</h1>
-                  <div class="wechat-meta">Pulse Distro · 公众号预览</div>
-                  <article>%s</article>
-                  %s
+                <section class="wechat-mock w-full max-w-md bg-white border-[0.75rem] border-slate-900 rounded-[2.25rem] shadow-2xl overflow-hidden flex flex-col text-slate-800 text-xs mx-auto">
+                  <div class="h-6 bg-white px-5 flex justify-between items-center text-[10px] font-semibold text-slate-700">
+                    <span>20:46</span>
+                    <span class="flex gap-1">信号 电量</span>
+                  </div>
+                  <div class="h-11 border-b border-slate-100 flex items-center gap-4 px-4 bg-white">
+                    <span class="text-sm">‹</span>
+                    <span class="font-medium text-slate-800 text-sm">公众号阅读</span>
+                  </div>
+                  <div class="p-5 overflow-y-auto flex-grow">
+                    <div class="text-lg font-bold leading-snug text-slate-900 mb-3">%s</div>
+                    <div class="flex gap-2 text-slate-400 mb-4 text-[10px]">
+                      <span>2026-05-29</span>
+                      <span class="text-blue-500 font-semibold">PulseDistro官微</span>
+                      <span class="text-slate-300">极客学术</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200/50 p-3.5 text-[11px] text-slate-500 rounded-lg mb-5 leading-relaxed">
+                      <strong>摘要：</strong>%s
+                    </div>
+                    <article class="leading-relaxed text-slate-700">%s</article>
+                    %s
+                  </div>
                 </section>
-                """.formatted(escape(data.title()), htmlContent(data.content()), tags(data.tags(), ""));
+                """.formatted(escape(data.title()), escape(data.summary()), htmlContent(data.content()), tags(data.tags(), ""));
     }
 
     private String renderBilibili(MockPageDataResponse data) {
         return """
-                <section class="bilibili-mock">
-                  <div class="glass-header">
-                    <div class="bilibili-badge">Bilibili Dynamic</div>
-                    <div class="platform">mock</div>
+                <section class="bilibili-mock w-full max-w-3xl bg-white border border-slate-200 rounded-lg shadow-sm p-6 flex flex-col gap-4 text-slate-800 text-sm mx-auto">
+                  <div class="text-slate-400 text-xs flex gap-1 items-center">
+                    <span>专栏区</span> / <span>科技数码</span>
                   </div>
-                  <h1>%s</h1>
-                  <article>%s</article>
+                  <div class="text-lg font-bold text-slate-900 leading-snug">%s</div>
+                  <div class="flex flex-wrap gap-4 text-[10px] text-slate-400 border-b border-slate-100 pb-3">
+                    <span>作者: 科技Up主小助手</span>
+                    <span>时间: 2026-05-29 20:46</span>
+                    <span>阅读: 12.8k</span>
+                    <span>评论: 452</span>
+                  </div>
+                  <article class="leading-relaxed text-slate-800 text-[13.5px]">%s</article>
                   %s
+                  <div class="flex flex-wrap gap-6 pt-4 border-t border-slate-100 text-slate-400 text-xs mt-3">
+                    <div class="flex items-center gap-1">点赞 <span>(2.4k)</span></div>
+                    <div class="flex items-center gap-1">投币 <span>(1.8k)</span></div>
+                    <div class="flex items-center gap-1">收藏 <span>(1.2k)</span></div>
+                    <div class="flex items-center gap-1">分享 <span>(320)</span></div>
+                  </div>
                 </section>
                 """.formatted(escape(data.title()), htmlContent(data.content()), tags(data.tags(), "#"));
     }
@@ -216,10 +232,8 @@ public class MockPageController {
     private String renderGeneric(MockPageDataResponse data) {
         return """
                 <section>
-                  <div class="glass-header">
-                    <div class="platform">%s</div>
-                  </div>
-                  <h1>%s</h1>
+                  <div class="text-xs uppercase tracking-[0.12em] text-slate-500">%s</div>
+                  <h1 class="font-title text-3xl font-bold">%s</h1>
                   <article>%s</article>
                   %s
                 </section>
@@ -232,11 +246,20 @@ public class MockPageController {
         }
         return tags.stream()
                 .map(tag -> "<span>" + escape(prefix + tag) + "</span>")
-                .collect(java.util.stream.Collectors.joining("", "<div class=\"tag-list\">", "</div>"));
+                .collect(Collectors.joining("", "<div class=\"tag-list\">", "</div>"));
     }
 
     private String htmlContent(String text) {
         return escape(text).replace("\n", "<br />");
+    }
+
+    private String coverImage(MockPageDataResponse data) {
+        MediaRef firstMedia = data.media() == null || data.media().isEmpty() ? null : data.media().getFirst();
+        if (firstMedia != null && firstMedia.publicUrl() != null) {
+            return "<img src=\"" + escape(firstMedia.publicUrl()) + "\" alt=\""
+                    + escape(firstMedia.alt()) + "\" class=\"w-full h-full object-cover\">";
+        }
+        return "<div class=\"xhs-cover w-full h-full\">" + escape(data.title()) + "</div>";
     }
 
     private String escape(String text) {
