@@ -1,0 +1,10 @@
+{
+  "agent": "OverviewAgent",
+  "cycle": 1,
+  "max_cycles": 3,
+  "agent_doc_mtimes": {
+    "project": 1780109020.5543098,
+    "module": 1780109020.5580323
+  },
+  "last_run_at": "2026-05-30T03:41:46.627920+00:00"
+}
